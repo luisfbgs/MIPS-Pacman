@@ -1,7 +1,7 @@
 .data
 	F:.word 0xffffffff
-	X: .word 12,249
-	Y: .word 120,120
+	X: .word 0,320
+	Y: .word 0,240
 	COR: .word 0x88888888 
 .text
 	j main
@@ -28,8 +28,7 @@ PO:	li $t8,0xFF000000
 	add $t8,$t8,$a0
 	mul $t3,$a2,320
 	add $t8,$t8,$t3
-	
-	blt $t1,$t2,H
+	#$a0 passo comum, $a2 passo incomum, $t8 endereço que pinta
 	blt $a0,$a1,AA
 	li $a0,-1
 	j AB
@@ -38,21 +37,11 @@ AB:	blt $a2,$a3,BB
 	li $a2,-320
 	j BA
 BB:	li $a2,320
-BA:	j LEPO
-
-H:	move $v0,$t1
-	move $t1,$t2
-	move $t2,$v0
-	blt $a2,$a3,HAA
-	li $v1,-320
-	j HAB
-HAA:	li $v1,320
-HAB:	blt $a0,$a1,HBB
-	li $a2,-1
-	j HBA
-HBB:	li $a2,1
-HBA:	move $a0,$v1
-	#$a0 passo comum, $a2 passo incomum, $t8 endereço que pinta, $t7 erro
+BA:	blt $t2,$t1,LEPO
+	move $v0,$a0
+	move $a0,$a2
+	move $a2,$a0
+	#$t7 erro
 LEPO:	div $t7,$t2,$t6
 	move $t6,$t7
 	sub $t7,$t2,$t6
@@ -61,21 +50,21 @@ LOOPP:	sb $v0,0($t8)
 	add $t8,$t8,$a0
 	subi $t0,$t0,1
 	bne $t0,$zero,LOOPP
-	beq $t2,$t7,A
-V:	subi $t2,$t2,1
+	beq $t2,$t7,RESTO
+VOLTA:	subi $t2,$t2,1
 	beq $t2,$zero sai
 	add $t8,$t8,$a2
 	j LOOP
-	
-A:	beq $t5,$zero,V
+	#distribui o resto
+RESTO:	beq $t5,$zero,VOLTA
 	sb $v0,0($t8)
 	add $t8,$t8,$a0
 	subi $t5,$t5,1
 	sub $t7,$t7,$t6
 	andi $a1,$t5,1
-	beq $a1,$zero,V
+	beq $a1,$zero,VOLTA
 	subi $t7,$t7,1
-	j V
+	j VOLTA
 
 sai:	jr $ra
 
