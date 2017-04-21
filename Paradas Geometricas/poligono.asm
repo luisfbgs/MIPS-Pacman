@@ -2,9 +2,9 @@
  baseadd: .word 0xff000000
  #coordinates: .word 3, 10 , 230, 50, 9 ,35,236
  #coordinates: .word 2, 10 , 230, 50, 9 
- coordinates: .word 4, 10 , 230, 10 , 9 , 260, 9 , 260 ,230
- pr: .word 0, 0, 0x88888888 
- 
+ coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
+ pr: .word 0, 0, 0x07
+  
 .text
 j main
 
@@ -136,7 +136,7 @@ poligono:
  sw $ra,12($sp) #salva ra na pilha
  
  for: beq $t4,$t5,endfor
-  li $a2,0x707070
+  li $a2,0x70
   move $a0,$t3
  
   sw $t3,0($sp)
@@ -186,6 +186,8 @@ bfs:
 	beq $t1,$t2,endpreenche 
 		lw $t0,0($t2)
 		subi $t2,$t2,4
+		blt $t0,0xff000000,bfs
+		bgt $t0,0xff012C00,bfs
 		lb $t3,0($t0)
 		bne $t3,$t4,bfs
 		sb $a2,0($t0)
@@ -209,7 +211,7 @@ main:
  	jal poligono
  	
  	la $t0,pr
- 	li $a0,160
+ 	li $a0,120
  	li $a1,120
 	lw $a2,8($t0)
 	jal preenche
