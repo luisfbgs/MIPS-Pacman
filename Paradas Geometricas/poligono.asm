@@ -3,6 +3,7 @@
  #coordinates: .word 3, 10 , 230, 50, 9 ,35,236
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 230, 10 , 9 , 260, 9 , 260 ,230
+ pr: .word 0, 0, 0x88888888 
  
 .text
 j main
@@ -11,7 +12,7 @@ funcao_ponto:
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereÃ§o)
+	#Uso do t0(variaveis) e t1(endereço)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
@@ -28,7 +29,7 @@ endponto:
 
 funcao_reta:
 	#a0 = Endereco das coordenadas
-	#a1 = cor
+	#a2 = cor
 	#t6 = x0 t7=y0 t8=x1 t9=y1
 	#t0 = dx, t1 = dy, t2 = sx, t3 = sy, t4=err, t5 = e2
 	
@@ -135,7 +136,7 @@ poligono:
  sw $ra,12($sp) #salva ra na pilha
  
  for: beq $t4,$t5,endfor
-  li $a1,122
+  li $a2,0x707070
   move $a0,$t3
  
   sw $t3,0($sp)
@@ -148,7 +149,7 @@ poligono:
   lw $t4,4($sp)
   lw $t5,8($sp) #recupera da pilha interna
  
-  addi $t3,$t3,8 #prÃ³ximo par de coordinates
+  addi $t3,$t3,8 #próximo par de coordinates
   addi $t4,$t4,1 #contador++
   j for
  endfor:  
@@ -167,5 +168,49 @@ poligono:
  lw $t7,28($sp)
  endpoligono: jr $ra
  
+
+preenche:
+ 	#$a0 = x, $a1 = y, $a2 = cor
+	la $t0,baseadd
+	lw $t0,0($t0)
+	add $t0,$t0,$a0
+	mul $a1,$a1,320
+	add $t0,$t0,$a1
+	move $t1,$sp
+	move $t2,$t1
+	lb $t4,0($t0)
+	sw $t0,0($t1)
+	subi $t1,$t1,4
+	#$t2 inicio da fila,$t1 fim da fila
+bfs:	
+	beq $t1,$t2,endpreenche 
+		lw $t0,0($t2)
+		subi $t2,$t2,4
+		lb $t3,0($t0)
+		bne $t3,$t4,bfs
+		sb $a2,0($t0)
+			#atualiza o ponteiro da fila
+			subi $t1,$t1,16
+			#coloca na fila os enderecos adjacentes a $t0
+			addi $t0,$t0,1
+			sw $t0,4($t1)
+			subi $t0,$t0,2
+			sw $t0,8($t1)
+			addi $t0,$t0,321
+			sw $t0,12($t1)
+			subi $t0,$t0,640
+			sw $t0,16($t1)
+
+		j bfs
+
+endpreenche:	jr $ra
+ 
 main:
- jal poligono
+ 	jal poligono
+ 	
+ 	la $t0,pr
+ 	li $a0,160
+ 	li $a1,120
+	lw $a2,8($t0)
+	jal preenche
+ sai:
