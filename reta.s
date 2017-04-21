@@ -52,7 +52,7 @@ HAB:	blt $a0,$a1,HBB
 	j HBA
 HBB:	li $a2,1
 HBA:	move $a0,$v1
-	#$a0 passo comum, $a2 passo incomum, $t8 endereço que pinta, $t7 erro
+	#$a0 passo comum, $a2 passo incomum, $t8 endereÃ§o que pinta, $t7 erro
 LEPO:	div $t7,$t2,$t6
 	move $t6,$t7
 	sub $t7,$t2,$t6
@@ -88,3 +88,4 @@ main:	la $s0,X
 	la $s0,COR
 	lw $v0,0($s0)
 	jal reta
+	
