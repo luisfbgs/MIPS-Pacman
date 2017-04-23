@@ -3,7 +3,7 @@
  #coordinates: .word 3, 10 , 230, 50, 9 ,35,236
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
- cor: 0x88
+ cor: 0x00
  square: .word 100, 100, 50,
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
@@ -15,7 +15,7 @@ funcao_ponto:
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereço)
+	#Uso do t0(variaveis) e t1(endereÃ§o)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
@@ -107,10 +107,15 @@ funcao_reta:
 endreta:
 
 func_poligono:
-	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
+	# a0 = endereÃ§o com quantidade de pontos na primeira posicao e coordenadas no resto
 	# a2 = cor
-	subi $sp, $sp, 4
-	sw $ra, 0($sp)
+	subi $sp, $sp, 20 # guarda na pilha os registradores preservados que serao usados
+	sw $s1,0($sp)
+	sw $s2,4($sp)
+	sw $s3,8($sp)
+	sw $s4,12($sp)
+	sw $ra,16($sp)
+	
 	move $s1,$a0
 	lw $t0,0($s1) # $t0 = quantidade de pontos
 	subi $t0,$t0,1
@@ -129,14 +134,16 @@ polfor:
 		lw $t2,4($s1)
 		sw $t1,8($a0)
 		sw $t2,12($a0)
+		
 		move $s4,$t0
 		jal funcao_reta
 		move $t0,$s4
+		
 		subi $t0,$t0,1
 	j polfor
+	
 endpolfor:
-	# fecha o poligono conectando o ultimo ponto com o primeiro
-	la $a0,coordinates
+	la $a0,coordinates # fecha o poligono conectando o ultimo ponto com o primeiro
 	lw $t1,0($s1)
 	lw $t2,4($s1)
 	sw $t1,0($a0) 
@@ -144,8 +151,13 @@ endpolfor:
 	sw $s2,8($a0)
 	sw $s3,12($a0)
 	jal funcao_reta
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	
+	lw $s1,0($sp) #recupera os registradores preservados
+	lw $s2,4($sp)
+	lw $s3,8($sp)
+	lw $s4,12($sp)
+	lw $ra,16($sp)
+	addi $sp, $sp, 20
 	jr $ra
 	
 preenche:
@@ -248,12 +260,14 @@ main:
  	li $t0,0xff000000
  	li $t1,0xff012c00
  	li $a2,0xffffffff
- tela:	beq $t0,$t1,cMain
+ tela:
+ 	beq $t0,$t1,cMain
  	sw $a2,0($t0)
  	addi $t0,$t0,4
  	j tela
  	# teste quadrado
- cMain:	la $t0,square
+ cMain:	
+ 	la $t0,square
  	la $t1,cor
  	lw $a0,0($t0)
  	lw $a1,4($t0)
