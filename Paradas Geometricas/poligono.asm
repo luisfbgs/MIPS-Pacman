@@ -3,12 +3,15 @@
  #coordinates: .word 3, 10 , 230, 50, 9 ,35,236
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
- pr: .word 0, 0, 0x07
-  
+ cor: 0x88
+ square: .word 100, 100, 50,
+ cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
+ nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
 .text
 j main
 
 funcao_ponto:
+	# $a0 = x, $a1 = y
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
@@ -103,74 +106,51 @@ funcao_reta:
 	jr $ra
 endreta:
 
-poligono:
-
-#uso de t0,t1,t2 temporarios
-
- addi $sp,$sp,-32 #salva reg usados na pilha externa
- sw $t0,0($sp)
- sw $t1,4($sp)
- sw $t2,8($sp)
- sw $t3,12($sp)
- sw $t4,16($sp)
- sw $t5,20($sp)
- sw $t6,24($sp)
- sw $t7,28($sp)
- 
- la $t3,coordinates
- lw $t5, 0($t3) #contadorend
- 
- move $t0,$t5
- mul $t0,$t0,8
- addi $t0,$t0,4
- lw $t1,4($t3)
- lw $t2,8($t3)
- add $t0,$t0,$t3
- sw $t1,0($t0)
- sw $t2,4($t0)
- 
- li $t4,0 #contador
- addi $t3,$t3,4
- 
- addi $sp,$sp,-16 #aloca para 4 elementos
- sw $ra,12($sp) #salva ra na pilha
- 
- for: beq $t4,$t5,endfor
-  li $a2,0x70
-  move $a0,$t3
- 
-  sw $t3,0($sp)
-  sw $t4,4($sp)
-  sw $t5,8($sp) #salva na pilha interna
- 
-  jal funcao_reta
- 
-  lw $t3,0($sp)
-  lw $t4,4($sp)
-  lw $t5,8($sp) #recupera da pilha interna
- 
-  addi $t3,$t3,8 #próximo par de coordinates
-  addi $t4,$t4,1 #contador++
-  j for
- endfor:  
- 
- lw $ra,12($sp)
- addi $sp,$sp,16 #desaloca pilha interna
- 
- addi $sp,$sp,32 #desaloca pilha externa
- lw $t0,0($sp)
- lw $t1,4($sp)
- lw $t2,8($sp)
- lw $t3,12($sp)
- lw $t4,16($sp)
- lw $t5,20($sp) 
- lw $t6,24($sp)
- lw $t7,28($sp)
- endpoligono: jr $ra
- 
-
+func_poligono:
+	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
+	# a2 = cor
+	subi $sp, $sp, 4
+	sw $ra, 0($sp)
+	move $s1,$a0
+	lw $t0,0($s1) # $t0 = quantidade de pontos
+	subi $t0,$t0,1
+	addi $s1,$s1,4
+	lw $s2,0($s1)	# guarda o primeiro ponto para fechar o poligono
+	lw $s3,4($s1)
+polfor:	
+	beq $t0,$zero,endpolfor
+		la $a0,coordinates # coordenadas pra funcao_ponto
+		lw $t1,0($s1)
+		lw $t2,4($s1)
+		sw $t1,0($a0) 	# armazena em $a0 o ponto do inicio da reta
+		sw $t2,4($a0)
+		addi $s1,$s1,8
+		lw $t1,0($s1)	# le o proximo ponto e armazena em $a0
+		lw $t2,4($s1)
+		sw $t1,8($a0)
+		sw $t2,12($a0)
+		move $s4,$t0
+		jal funcao_reta
+		move $t0,$s4
+		subi $t0,$t0,1
+	j polfor
+endpolfor:
+	# fecha o poligono conectando o ultimo ponto com o primeiro
+	la $a0,coordinates
+	lw $t1,0($s1)
+	lw $t2,4($s1)
+	sw $t1,0($a0) 
+	sw $t2,4($a0)
+	sw $s2,8($a0)
+	sw $s3,12($a0)
+	jal funcao_reta
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
+	
 preenche:
  	#$a0 = x, $a1 = y, $a2 = cor
+ 	addi $sp,$sp,-4
 	la $t0,baseadd
 	lw $t0,0($t0)
 	add $t0,$t0,$a0
@@ -179,6 +159,7 @@ preenche:
 	move $t1,$sp
 	move $t2,$t1
 	lb $t4,0($t0)
+	beq $t4,$a2,endpreenche
 	sw $t0,0($t1)
 	subi $t1,$t1,4
 	#$t2 inicio da fila,$t1 fim da fila
@@ -205,14 +186,85 @@ bfs:
 
 		j bfs
 
-endpreenche:	jr $ra
+endpreenche:	
+	addi $sp,$sp,4
+	jr $ra
  
-main:
- 	jal poligono
- 	
- 	la $t0,pr
- 	li $a0,120
- 	li $a1,120
-	lw $a2,8($t0)
+quadrado:
+	# a0 = x1, a1 = y1, a2 = lado, a3= cor 
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+	move $s0,$a0
+	move $s1,$a1
+	move $s2,$a2
+	move $s3,$a3
+	
+	add $t0,$s0,$s2 	# t0 = tamanho do lado no eixo x
+	add $t1,$s1,$s2		# t1 = tamanho do lado no eixo y
+	
+	addi $sp,$sp,-16
+	sw $s0,0($sp)
+	sw $s1,4($sp)
+	sw $s2,8($sp)
+	sw $s3,12($sp)
+	
+	la $t2,cords		# salvando na memoria cada coordenada dos vertices do quadrado
+	li $t3,4
+	sw $t3,0($t2)		# quanidade de pontos
+	sw $s0,4($t2)		# x1
+	sw $s1,8($t2)		# y1
+	sw $t0,12($t2)		# x2
+	sw $s1,16($t2)		# y2
+	sw $s0,28($t2)		# x4
+	sw $t1,32($t2)		# y4
+	sw $t0,20($t2)		# x3
+	sw $t1,24($t2)		# y3
+	move $a2,$s3		# cor
+	move $a0,$t2
+	jal func_poligono
+	
+	lw $s0,0($sp)
+	lw $s1,4($sp)
+	lw $s2,8($sp)
+	lw $s3,12($sp)
+	addi $sp,$sp,16
+	
+	div $s2,$s2,2
+	add $t3,$s0,$s2 
+	add $t4,$s1,$s2
+	move $a0,$t3
+	move $a1,$t4
+	move $a2,$s3
 	jal preenche
+	
+	lw $ra,0($sp)
+	addi $sp,$sp,4
+	li $v0,0
+	jr $ra
+	
+	
+main:	
+	# pinta a tela de branco
+ 	li $t0,0xff000000
+ 	li $t1,0xff012c00
+ 	li $a2,0xffffffff
+ tela:	beq $t0,$t1,cMain
+ 	sw $a2,0($t0)
+ 	addi $t0,$t0,4
+ 	j tela
+ 	# teste quadrado
+ cMain:	la $t0,square
+ 	la $t1,cor
+ 	lw $a0,0($t0)
+ 	lw $a1,4($t0)
+	lw $a2,8($t0)
+	lw $a3,0($t1)
+	jal quadrado
+	# teste poligono nao convexo
+ 	la $a0,nconv
+ 	li $a2,0x88
+ 	jal func_poligono
+ 
  sai:
+ 	li $v0,10
+	syscall
