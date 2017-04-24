@@ -4,7 +4,7 @@
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
  cor: 0x00
- square: .word 100, 100, 50,
+ square: .word 140, 120, 58
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
 .text
@@ -15,20 +15,22 @@ funcao_ponto:
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereÃ§o)
+	#Uso do t0(variaveis) e t1(endereço)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$t0
 	move $t0,$a0 #reg reusado
 	add $t1,$t1,$t0
+	blt $t1,0xff000000,endponto
+	bgt $t1,0xff012C00,endponto
 	sb $a2,0($t1)
-	
+endponto:	
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
 	addi $sp, $sp, 8
 	jr $ra
-endponto:
+
 
 funcao_reta:
 	#a0 = Endereco das coordenadas
@@ -106,10 +108,11 @@ funcao_reta:
 	jr $ra
 endreta:
 
-func_poligono:
-	# a0 = endereÃ§o com quantidade de pontos na primeira posicao e coordenadas no resto
+funcao_poligono:
+	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
 	# a2 = cor
-	subi $sp, $sp, 20 # guarda na pilha os registradores preservados que serao usados
+	# guarda na pilha registradores preservados que serao usados
+	addi $sp, $sp,-20 
 	sw $s1,0($sp)
 	sw $s2,4($sp)
 	sw $s3,8($sp)
@@ -118,7 +121,7 @@ func_poligono:
 	
 	move $s1,$a0
 	lw $t0,0($s1) # $t0 = quantidade de pontos
-	subi $t0,$t0,1
+	addi $t0,$t0,-1
 	addi $s1,$s1,4
 	lw $s2,0($s1)	# guarda o primeiro ponto para fechar o poligono
 	lw $s3,4($s1)
@@ -143,7 +146,8 @@ polfor:
 	j polfor
 	
 endpolfor:
-	la $a0,coordinates # fecha o poligono conectando o ultimo ponto com o primeiro
+ 	# fecha o poligono conectando o ultimo ponto com o primeiro
+	la $a0,coordinates
 	lw $t1,0($s1)
 	lw $t2,4($s1)
 	sw $t1,0($a0) 
@@ -151,8 +155,8 @@ endpolfor:
 	sw $s2,8($a0)
 	sw $s3,12($a0)
 	jal funcao_reta
-	
-	lw $s1,0($sp) #recupera os registradores preservados
+	# recupera registradores preservados
+	lw $s1,0($sp) 
 	lw $s2,4($sp)
 	lw $s3,8($sp)
 	lw $s4,12($sp)
@@ -160,8 +164,8 @@ endpolfor:
 	addi $sp, $sp, 20
 	jr $ra
 	
-preenche:
- 	#$a0 = x, $a1 = y, $a2 = cor
+ preenche:
+ 	# $a0 = x, $a1 = y, $a2 = cor
  	addi $sp,$sp,-4
 	la $t0,baseadd
 	lw $t0,0($t0)
@@ -174,26 +178,29 @@ preenche:
 	beq $t4,$a2,endpreenche
 	sw $t0,0($t1)
 	subi $t1,$t1,4
-	#$t2 inicio da fila,$t1 fim da fila
+	# $t2 inicio da fila,$t1 fim da fila
+	# $t5 e $t6 limites do bitmap
+	li $t5,0xff000000
+	li $t6,0xff012C00
 bfs:	
 	beq $t1,$t2,endpreenche 
 		lw $t0,0($t2)
-		subi $t2,$t2,4
-		blt $t0,0xff000000,bfs
-		bgt $t0,0xff012C00,bfs
+		addi $t2,$t2,-4
+		blt $t0,$t5,bfs
+		bgt $t0,$t6,bfs
 		lb $t3,0($t0)
 		bne $t3,$t4,bfs
 		sb $a2,0($t0)
-			#atualiza o ponteiro da fila
-			subi $t1,$t1,16
-			#coloca na fila os enderecos adjacentes a $t0
+			# atualiza o ponteiro da fila
+			addi $t1,$t1,-16
+			# coloca na fila os enderecos adjacentes a $t0
 			addi $t0,$t0,1
 			sw $t0,4($t1)
-			subi $t0,$t0,2
+			addi $t0,$t0,-2
 			sw $t0,8($t1)
 			addi $t0,$t0,321
 			sw $t0,12($t1)
-			subi $t0,$t0,640
+			addi $t0,$t0,-640
 			sw $t0,16($t1)
 
 		j bfs
@@ -233,7 +240,7 @@ quadrado:
 	sw $t1,24($t2)		# y3
 	move $a2,$s3		# cor
 	move $a0,$t2
-	jal func_poligono
+	jal funcao_poligono
 	
 	lw $s0,0($sp)
 	lw $s1,4($sp)
@@ -254,6 +261,72 @@ quadrado:
 	li $v0,0
 	jr $ra
 	
+circulo:
+	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
+	# guarda na pilha registradores preservados que serao utilizados
+	subi $sp,$sp,24
+	sw $ra,0($sp)
+	sw $s0,4($sp)
+	sw $s1,8($sp)
+	sw $s2,12($sp)
+	sw $s3,16($sp)
+	sw $s4,20($sp)
+	
+	add $s0,$zero,$zero # y inicial
+	add $s1,$zero,$a3 # x inicial
+	add $s2,$zero,$zero # erro
+	add $s3,$zero,$a1
+	add $s4,$zero,$a0
+circloop:
+	blt $s1,$s0,endcirculo
+		# colocar pontos simetricamente nos oito octantes do circulo
+		add $a0,$s4,$s1
+		add $a1,$s3,$s0
+			jal funcao_ponto
+        	add $a0,$s4,$s0
+		add $a1,$s3,$s1
+			jal funcao_ponto
+        	sub $a0,$s4,$s0
+		add $a1,$s3,$s1
+			jal funcao_ponto
+        	sub $a0,$s4,$s1
+		add $a1,$s3,$s0
+			jal funcao_ponto
+        	sub $a0,$s4,$s1
+		sub $a1,$s3,$s0
+			jal funcao_ponto
+        	sub $a0,$s4,$s0
+		sub $a1,$s3,$s1
+			jal funcao_ponto
+        	add $a0,$s4,$s0
+		sub $a1,$s3,$s1
+			jal funcao_ponto
+        	add $a0,$s4,$s1
+		sub $a1,$s3,$s0
+			jal funcao_ponto
+		# atualizar erro
+		ble $s2,$zero,maiserro
+		addi $s1,$s1,-1
+		mul $t0,$s1,2
+		addi $t0,$t0,1
+		sub $s2,$s2,$t0
+	j circloop
+maiserro:
+		addi $s0,$s0,1
+		mul $t0,$s0,2
+		addi $t0,$t0,1
+		add $s2,$s2,$t0
+	j circloop
+endcirculo:
+	# recuperar da pilha registradores preservados utilizados
+	lw $ra,0($sp)  
+	lw $s0,4($sp)
+	lw $s1,8($sp)
+	lw $s2,12($sp)
+	lw $s3,16($sp)
+	lw $s4,20($sp)
+	addi $sp,$sp,24
+	jr $ra
 	
 main:	
 	# pinta a tela de branco
@@ -277,8 +350,17 @@ main:
 	# teste poligono nao convexo
  	la $a0,nconv
  	li $a2,0x88
- 	jal func_poligono
- 
+ 	jal funcao_poligono
+ 	# teste circulo
+ 	li $a2,0x70
+ 	li $a0,250
+ 	li $a1,120
+ 	li $a3,50
+ 	jal circulo
+ 	li $a0,0
+ 	li $a1,0
+ 	li $a2,0x06
+ 	jal preenche
  sai:
  	li $v0,10
 	syscall
