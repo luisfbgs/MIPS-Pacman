@@ -15,7 +15,7 @@ funcao_ponto:
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereço)
+	#Uso do t0(variaveis) e t1(endereÃ§o)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
@@ -109,7 +109,7 @@ funcao_reta:
 endreta:
 
 funcao_poligono:
-	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
+	# a0 = endereÃ§o com quantidade de pontos na primeira posicao e coordenadas no resto
 	# a2 = cor
 	# guarda na pilha registradores preservados que serao usados
 	addi $sp, $sp,-20 
@@ -218,8 +218,12 @@ quadrado:
 	move $s2,$a2
 	move $s3,$a3
 	
-	add $t0,$s0,$s2 	# t0 = tamanho do lado no eixo x
-	add $t1,$s1,$s2		# t1 = tamanho do lado no eixo y
+	div $t0,$s2,2
+	sub $s4,$s0,$t0
+	sub $s5,$s1,$t0
+	
+	add $t0,$s4,$s2 	# t0 = tamanho do lado no eixo x
+	add $t1,$s5,$s2		# t1 = tamanho do lado no eixo y
 	
 	addi $sp,$sp,-16
 	sw $s0,0($sp)
@@ -230,11 +234,11 @@ quadrado:
 	la $t2,cords		# salvando na memoria cada coordenada dos vertices do quadrado
 	li $t3,4
 	sw $t3,0($t2)		# quanidade de pontos
-	sw $s0,4($t2)		# x1
-	sw $s1,8($t2)		# y1
+	sw $s4,4($t2)		# x1
+	sw $s5,8($t2)		# y1
 	sw $t0,12($t2)		# x2
-	sw $s1,16($t2)		# y2
-	sw $s0,28($t2)		# x4
+	sw $s5,16($t2)		# y2
+	sw $s4,28($t2)		# x4
 	sw $t1,32($t2)		# y4
 	sw $t0,20($t2)		# x3
 	sw $t1,24($t2)		# y3
@@ -247,12 +251,9 @@ quadrado:
 	lw $s2,8($sp)
 	lw $s3,12($sp)
 	addi $sp,$sp,16
-	
-	div $s2,$s2,2
-	add $t3,$s0,$s2 
-	add $t4,$s1,$s2
-	move $a0,$t3
-	move $a1,$t4
+
+	move $a0,$s0
+	move $a1,$s1
 	move $a2,$s3
 	jal preenche
 	
