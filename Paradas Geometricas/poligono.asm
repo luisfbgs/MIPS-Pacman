@@ -4,7 +4,7 @@
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
  cor: 0x00
- square: .word 140, 120, 58
+ square: .word 160, 120, 58
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
 .text
