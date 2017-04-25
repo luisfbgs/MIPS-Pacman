@@ -4,7 +4,7 @@
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
  cor: 0x00
- square: .word 160, 120, 58
+ square: .word 163, 123, 50
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
 .text
@@ -15,7 +15,7 @@ funcao_ponto:
 	addi $sp, $sp, -8
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereÃ§o)
+	#Uso do t0(variaveis) e t1(endereço)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
@@ -109,7 +109,7 @@ funcao_reta:
 endreta:
 
 funcao_poligono:
-	# a0 = endereÃ§o com quantidade de pontos na primeira posicao e coordenadas no resto
+	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
 	# a2 = cor
 	# guarda na pilha registradores preservados que serao usados
 	addi $sp, $sp,-20 
@@ -179,9 +179,11 @@ endpolfor:
 	sw $t0,0($t1)
 	subi $t1,$t1,4
 	# $t2 inicio da fila,$t1 fim da fila
-	# $t5 e $t6 limites do bitmap
+	# $t5, $t6, $t7 e $s1 limites do bitmap
 	li $t5,0xff000000
 	li $t6,0xff012C00
+	li $t7,320
+	li $s1,319
 bfs:	
 	beq $t1,$t2,endpreenche 
 		lw $t0,0($t2)
@@ -192,16 +194,22 @@ bfs:
 		bne $t3,$t4,bfs
 		sb $a2,0($t0)
 			# atualiza o ponteiro da fila
-			addi $t1,$t1,-16
+			divu $t0,$t7
 			# coloca na fila os enderecos adjacentes a $t0
 			addi $t0,$t0,1
+			mfhi $t3
+			beq $t3,$s1,left
+			sw $t0,0($t1)
+			addi $t1,$t1,-4
+left:			addi $t0,$t0,-2
+			beq $t3,$zero,down
+			sw $t0,0($t1)
+			addi $t1,$t1,-4
+down:			addi $t0,$t0,321
+			addi $t1,$t1,-8
 			sw $t0,4($t1)
-			addi $t0,$t0,-2
-			sw $t0,8($t1)
-			addi $t0,$t0,321
-			sw $t0,12($t1)
 			addi $t0,$t0,-640
-			sw $t0,16($t1)
+			sw $t0,8($t1)
 
 		j bfs
 
@@ -261,51 +269,76 @@ quadrado:
 	addi $sp,$sp,4
 	li $v0,0
 	jr $ra
-	
 circulo:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utilizados
-	subi $sp,$sp,24
+	subi $sp,$sp,28
 	sw $ra,0($sp)
 	sw $s0,4($sp)
 	sw $s1,8($sp)
 	sw $s2,12($sp)
 	sw $s3,16($sp)
 	sw $s4,20($sp)
+	sw $s5,24($sp)
 	
 	add $s0,$zero,$zero # y inicial
 	add $s1,$zero,$a3 # x inicial
 	add $s2,$zero,$zero # erro
-	add $s3,$zero,$a1
-	add $s4,$zero,$a0
+	add $s3,$zero,$a1 # y
+	add $s4,$zero,$a0 # x
+	li $s5,320
+
 circloop:
 	blt $s1,$s0,endcirculo
 		# colocar pontos simetricamente nos oito octantes do circulo
-		add $a0,$s4,$s1
+		add $a0,$s4,$s1 
+		blt $s5,$a0,octante2
+		blt $a0,$zero,octante2
 		add $a1,$s3,$s0
 			jal funcao_ponto
-        	add $a0,$s4,$s0
+octante2:
+	      	add $a0,$s4,$s0
+	      	blt $s5,$a0,octante3
+		blt $a0,$zero,octante3
 		add $a1,$s3,$s1
 			jal funcao_ponto
+octante3:        	
         	sub $a0,$s4,$s0
+        	blt $s5,$a0,octante4
+		blt $a0,$zero,octante4
 		add $a1,$s3,$s1
 			jal funcao_ponto
+octante4:        	
         	sub $a0,$s4,$s1
+        	blt $s5,$a0,octante5
+		blt $a0,$zero,octante5
 		add $a1,$s3,$s0
 			jal funcao_ponto
+octante5:        	
         	sub $a0,$s4,$s1
+        	blt $s5,$a0,octante6
+		blt $a0,$zero,octante6
 		sub $a1,$s3,$s0
 			jal funcao_ponto
+octante6:        	
         	sub $a0,$s4,$s0
+        	blt $s5,$a0,octante7
+		blt $a0,$zero,octante7
 		sub $a1,$s3,$s1
 			jal funcao_ponto
+octante7:        	
         	add $a0,$s4,$s0
+        	blt $s5,$a0,octante8
+		blt $a0,$zero,octante8
 		sub $a1,$s3,$s1
 			jal funcao_ponto
+octante8:        	
         	add $a0,$s4,$s1
+        	blt $s5,$a0,erro
+		blt $a0,$zero,erro
 		sub $a1,$s3,$s0
 			jal funcao_ponto
-		# atualizar erro
+erro:		# atualizar erro
 		ble $s2,$zero,maiserro
 		addi $s1,$s1,-1
 		mul $t0,$s1,2
@@ -326,7 +359,8 @@ endcirculo:
 	lw $s2,12($sp)
 	lw $s3,16($sp)
 	lw $s4,20($sp)
-	addi $sp,$sp,24
+	lw $s5,24($sp)
+	addi $sp,$sp,28
 	jr $ra
 	
 main:	
@@ -355,7 +389,7 @@ main:
  	# teste circulo
  	li $a2,0x70
  	li $a0,250
- 	li $a1,120
+ 	li $a1,140
  	li $a3,50
  	jal circulo
  	li $a0,0
