@@ -4,31 +4,47 @@
  #coordinates: .word 2, 10 , 230, 50, 9 
  coordinates: .word 4, 10 , 23, 10 , 9 , 260, 9 , 260 ,230
  cor: 0x00
- square: .word 163, 123, 50
+ square: .word 160,140, 50
+ coo:	.word 0,0,320,239
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
- nconv:  .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
+ nconv:  .word 5, 20, -0, 1,200, 120, 200, 120, 20 , 80,140
 .text
 j main
 
+coordsverify:
+	bgt $a0,319,errocoord
+	bgt $a1,239,errocoord
+	bltz $a0,errocoord
+	bltz $a1,errocoord
+	li $v0,0
+	jr $ra
+errocoord:
+	li $v0,1
+	jr $ra
+
 funcao_ponto:
 	# $a0 = x, $a1 = y
-	addi $sp, $sp, -8
+	
+	addi $sp, $sp, -12
 	sw $t0, 0($sp)
 	sw $t1, 4($sp)
-	#Uso do t0(variaveis) e t1(endereço)
+	sw $ra, 8($sp)
+	jal coordsverify
+	bnez $v0,erroponto
+	#Uso do t0(variaveis) e t1(endere?o)
 	move $t0,$a1
 	mul $t0,$t0,320 # y *= 320
 	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$t0
 	move $t0,$a0 #reg reusado
 	add $t1,$t1,$t0
-	blt $t1,0xff000000,endponto
-	bgt $t1,0xff012C00,endponto
 	sb $a2,0($t1)
-endponto:	
+	
+erroponto:
 	lw $t0, 0($sp)
 	lw $t1, 4($sp)
-	addi $sp, $sp, 8
+	lw $ra, 8($sp)
+	addi $sp, $sp, 12
 	jr $ra
 
 
@@ -46,6 +62,21 @@ funcao_reta:
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	sub $t0,$t8,$t6
+
+	move $t2,$a0
+	li $t1,2
+	move $t3,$t2	
+verifypon:
+	beqz $t1,saiverifypon
+		addi $t1,$t1,-1
+		lw $a0,0($t3)
+		lw $a1,4($t3)
+		addi $t3,$t3,8
+		jal coordsverify
+	beqz $v0,verifypon
+	j erropon	
+saiverifypon:	
+	move $a0,$t2
 	
 	if_fr_1:
 		bgt $t0,$zero,else_fr_1
@@ -102,14 +133,14 @@ funcao_reta:
 		endif_fr_5:
 		j while_fr_1
 	ew_fr_1:
-
+erropon:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	jr $ra
 endreta:
 
 funcao_poligono:
-	# a0 = endereço com quantidade de pontos na primeira posicao e coordenadas no resto
+	# a0 = endereco com quantidade de pontos na primeira posicao e coordenadas no resto
 	# a2 = cor
 	# guarda na pilha registradores preservados que serao usados
 	addi $sp, $sp,-20 
@@ -120,6 +151,22 @@ funcao_poligono:
 	sw $ra,16($sp)
 	
 	move $s1,$a0
+	li $v0,0
+	move $t0,$a0
+	lw $t1,0($t0)
+	addi $t0,$t0,4
+	
+verifypol:
+	beqz $t1,saiverifypol
+		addi $t1,$t1,-1
+		lw $a0,0($t0)
+		lw $a1,4($t0)
+		addi $t0,$t0,8
+		jal coordsverify
+	beqz $v0,verifypol
+	j erropol	
+saiverifypol:	
+
 	lw $t0,0($s1) # $t0 = quantidade de pontos
 	addi $t0,$t0,-1
 	addi $s1,$s1,4
@@ -155,6 +202,7 @@ endpolfor:
 	sw $s2,8($a0)
 	sw $s3,12($a0)
 	jal funcao_reta
+erropol:
 	# recupera registradores preservados
 	lw $s1,0($sp) 
 	lw $s2,4($sp)
@@ -226,12 +274,24 @@ quadrado:
 	move $s2,$a2
 	move $s3,$a3
 	
+	li $v0,0
+	
 	div $t0,$s2,2
 	sub $s4,$s0,$t0
 	sub $s5,$s1,$t0
 	
+	move $a0,$s4
+	move $a1,$s5
+	jal coordsverify
+	bnez $v0,erroquad
+	
 	add $t0,$s4,$s2 	# t0 = tamanho do lado no eixo x
 	add $t1,$s5,$s2		# t1 = tamanho do lado no eixo y
+	
+	move $a0,$t0
+	move $a1,$t1
+	jal coordsverify
+	bnez $v0,erroquad
 	
 	addi $sp,$sp,-16
 	sw $s0,0($sp)
@@ -260,11 +320,7 @@ quadrado:
 	lw $s3,12($sp)
 	addi $sp,$sp,16
 
-	move $a0,$s0
-	move $a1,$s1
-	move $a2,$s3
-	jal preenche
-	
+erroquad:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	li $v0,0
@@ -281,6 +337,23 @@ circulo:
 	sw $s4,20($sp)
 	sw $s5,24($sp)
 	
+	move $s0,$a0
+	move $s1,$a1
+	
+	li $v0,0
+	add $a0,$s0,$a3
+	add $a1,$s1,$a3
+	jal coordsverify
+	bnez $v0,errocirc
+	
+	sub $a0, $s0,$a3	
+	sub $a1, $s1,$a3
+	jal coordsverify
+	bnez $v0,errocirc
+	
+	move $a0,$s0
+	move $a1,$s1
+		
 	add $s0,$zero,$zero # y inicial
 	add $s1,$zero,$a3 # x inicial
 	add $s2,$zero,$zero # erro
@@ -292,53 +365,37 @@ circloop:
 	blt $s1,$s0,endcirculo
 		# colocar pontos simetricamente nos oito octantes do circulo
 		add $a0,$s4,$s1 
-		blt $s5,$a0,octante2
-		blt $a0,$zero,octante2
 		add $a1,$s3,$s0
-			jal funcao_ponto
-octante2:
+		jal funcao_ponto
+
 	      	add $a0,$s4,$s0
-	      	blt $s5,$a0,octante3
-		blt $a0,$zero,octante3
 		add $a1,$s3,$s1
-			jal funcao_ponto
-octante3:        	
+		jal funcao_ponto
+     	
         	sub $a0,$s4,$s0
-        	blt $s5,$a0,octante4
-		blt $a0,$zero,octante4
 		add $a1,$s3,$s1
-			jal funcao_ponto
-octante4:        	
+		jal funcao_ponto
+
         	sub $a0,$s4,$s1
-        	blt $s5,$a0,octante5
-		blt $a0,$zero,octante5
 		add $a1,$s3,$s0
-			jal funcao_ponto
-octante5:        	
+		jal funcao_ponto
+
         	sub $a0,$s4,$s1
-        	blt $s5,$a0,octante6
-		blt $a0,$zero,octante6
 		sub $a1,$s3,$s0
-			jal funcao_ponto
-octante6:        	
+		jal funcao_ponto
+	
         	sub $a0,$s4,$s0
-        	blt $s5,$a0,octante7
-		blt $a0,$zero,octante7
 		sub $a1,$s3,$s1
-			jal funcao_ponto
-octante7:        	
+		jal funcao_ponto
+
         	add $a0,$s4,$s0
-        	blt $s5,$a0,octante8
-		blt $a0,$zero,octante8
 		sub $a1,$s3,$s1
-			jal funcao_ponto
-octante8:        	
+		jal funcao_ponto
+
         	add $a0,$s4,$s1
-        	blt $s5,$a0,erro
-		blt $a0,$zero,erro
 		sub $a1,$s3,$s0
-			jal funcao_ponto
-erro:		# atualizar erro
+		jal funcao_ponto
+		# atualizar erro
 		ble $s2,$zero,maiserro
 		addi $s1,$s1,-1
 		mul $t0,$s1,2
@@ -351,6 +408,7 @@ maiserro:
 		addi $t0,$t0,1
 		add $s2,$s2,$t0
 	j circloop
+errocirc:
 endcirculo:
 	# recuperar da pilha registradores preservados utilizados
 	lw $ra,0($sp)  
@@ -375,6 +433,18 @@ main:
  	j tela
  	# teste quadrado
  cMain:	
+ 
+ 	la $a0,coo
+ 	li $a2,0x21
+ 	jal funcao_reta
+ 	 # teste circulo
+ 	li $a2,0x70
+ 	li $a0,230
+ 	li $a1,140
+ 	li $a3,50
+ 	jal circulo
+ 	
+ 	# teste quadrado
  	la $t0,square
  	la $t1,cor
  	lw $a0,0($t0)
@@ -386,15 +456,15 @@ main:
  	la $a0,nconv
  	li $a2,0x88
  	jal funcao_poligono
- 	# teste circulo
- 	li $a2,0x70
- 	li $a0,250
- 	li $a1,140
- 	li $a3,50
- 	jal circulo
+ 
  	li $a0,0
- 	li $a1,0
+ 	li $a1,1
  	li $a2,0x06
+ 	jal preenche
+ 	
+ 	li $a0,20
+ 	li $a1,20
+ 	li $a2,0x65
  	jal preenche
  sai:
  	li $v0,10
