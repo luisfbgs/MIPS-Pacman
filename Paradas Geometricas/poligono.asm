@@ -217,7 +217,7 @@ erropol:
  	addi $sp,$sp,-8
 	sw $ra,4($sp)
 	
-	jal verifycoords
+	jal coordsverify
 	bnez $v0,erropreenche
 	
 	la $t0,baseadd
