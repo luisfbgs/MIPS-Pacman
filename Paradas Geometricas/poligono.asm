@@ -214,12 +214,18 @@ erropol:
 	
  preenche:
  	# $a0 = x, $a1 = y, $a2 = cor
- 	addi $sp,$sp,-4
+ 	addi $sp,$sp,-8
+	sw $ra,4($sp)
+	
+	jal verifycoords
+	bnez $v0,erropreenche
+	
 	la $t0,baseadd
 	lw $t0,0($t0)
 	add $t0,$t0,$a0
 	mul $a1,$a1,320
 	add $t0,$t0,$a1
+	
 	move $t1,$sp
 	move $t2,$t1
 	lb $t4,0($t0)
@@ -260,9 +266,10 @@ down:			addi $t0,$t0,321
 			sw $t0,8($t1)
 
 		j bfs
-
-endpreenche:	
-	addi $sp,$sp,4
+erropreenche:
+endpreenche:
+	lw $ra,4($sp)
+	addi $sp,$sp,8
 	jr $ra
  
 quadrado:
