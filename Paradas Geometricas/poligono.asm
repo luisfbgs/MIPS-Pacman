@@ -367,7 +367,7 @@ circulo:
 	add $s3,$zero,$a1 # y
 	add $s4,$zero,$a0 # x
 	li $s5,320
-
+	mul $a3,$a3,$a3 # raio = raio ao quadrado
 circloop:
 	blt $s1,$s0,endcirculo
 		# colocar pontos simetricamente nos oito octantes do circulo
@@ -402,19 +402,25 @@ circloop:
         	add $a0,$s4,$s1
 		sub $a1,$s3,$s0
 		jal funcao_ponto
-		# atualizar erro
-		ble $s2,$zero,maiserro
+		
+		addi $s0,$s0,1 # incrementa o y
+		
+		mul $t0,$s0,$s0
+		mul $t1,$s1,$s1
+		add $t1,$t0,$t1
+		sub $t2,$t1,$a3 # salva em $t2 o valor y^2 + x^2 - r^2
+		
+		addi $t1,$s1,-1
+		mul $t1,$t1,$t1
+		add $t1,$t0,$t1
+		sub $t3,$t1,$a3 # salva em $t3 o valor y^2 + (x-1)^2 - r^2
+		
+		abs $t2,$t2
+		abs $t3,$t3
+		
+		blt $t2,$t3,circloop # caso o valor de $t3 seja mais proximo de 0, x recebe x - 1, caso contratio x matem seu valor
 		addi $s1,$s1,-1
-		mul $t0,$s1,2
-		addi $t0,$t0,1
-		sub $s2,$s2,$t0
-	j circloop
-maiserro:
-		addi $s0,$s0,1
-		mul $t0,$s0,2
-		addi $t0,$t0,1
-		add $s2,$s2,$t0
-	j circloop
+		j circloop
 errocirc:
 endcirculo:
 	# recuperar da pilha registradores preservados utilizados
@@ -446,7 +452,7 @@ main:
  	jal funcao_reta
  	 # teste circulo
  	li $a2,0x70
- 	li $a0,230
+ 	li $a0,240
  	li $a1,140
  	li $a3,50
  	jal circulo
