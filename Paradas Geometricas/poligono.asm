@@ -8,7 +8,7 @@
  coo:	.word 0,0,319,239
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, -0, 1,200, 120, 200, 120, 20 , 80,140
- elips: .word 219,40,100,30
+ elips: .word 138,10,300,70,100,30
 .text
 j main
 
@@ -331,8 +331,8 @@ quadrado:
 erroquad:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
+	li $v0,0
 	jr $ra
-	
 circulo:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utilizados
@@ -446,7 +446,14 @@ elipse:
 	lw $s1,4($a0)
 	lw $t2,8($a0)
 	lw $t3,12($a0)
+	add $s0,$s0,$t2
+	sra $s0,$s0,1 # centro x
+	add $s1,$s1,$t3
+	sra $s1,$s1,1 # centro y
 	
+	lw $t2,16($a0)
+	lw $t3,20($a0)
+
 	li $t0,0 # x inicial
 	move $t1,$t3 # y inicial
 	mul $t2,$t2,$t2 # a^2
