@@ -331,8 +331,8 @@ quadrado:
 erroquad:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
-	li $v0,0
 	jr $ra
+	
 circulo:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utilizados
