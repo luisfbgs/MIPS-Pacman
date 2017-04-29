@@ -8,6 +8,7 @@
  coo:	.word 0,0,319,239
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, -0, 1,200, 120, 200, 120, 20 , 80,140
+ elips: .word 219,40,100,30
 .text
 j main
 
@@ -434,6 +435,158 @@ endcirculo:
 	addi $sp,$sp,28
 	jr $ra
 	
+elipse:
+	# $a0 = endereco do centro e raios, $a2 = cor
+	subi $sp,$sp,12
+	sw $ra,0($sp)
+	sw $s0,4($sp)
+	sw $s1,8($sp)
+	
+	lw $s0,0($a0)
+	lw $s1,4($a0)
+	lw $t2,8($a0)
+	lw $t3,12($a0)
+	
+	li $t0,0 # x inicial
+	move $t1,$t3 # y inicial
+	mul $t2,$t2,$t2 # a^2
+	move $a3,$t3
+	mul $t3,$t3,$t3 # b^2
+	# $t4 = P
+	mul $t4,$a3,-4
+	addi $t4,$t4,1
+	mul $t4,$t4,$t2
+	addi $t4,$t4,-2
+	sra $t4,$t4,2
+	add $t4,$t4,$t3
+
+	# $t5 = PE
+	mul $t5,$t3,3
+
+	# $t6 = PE2
+	sll $t6,$t3,1
+
+	# $t7 = PSE
+	addi $t7,$a3,-1
+	mul $t7,$t7,$t2
+	mul $t7,$t7,-2
+	add $t7,$t5,$t7
+
+	# t8 = PSE2
+	mul $t8,$t2,2
+	add $t8,$t6,$t8
+	
+	add $a0,$s0,$t0
+	add $a1,$s1,$t1
+		jal funcao_ponto
+	add $a0,$s0,$t0
+	sub $a1,$s1,$t1
+		jal funcao_ponto
+	sub $a0,$s0,$t0
+	add $a1,$s1,$t1
+		jal funcao_ponto
+	sub $a0,$s0,$t0
+	sub $a1,$s1,$t1
+		jal funcao_ponto
+	# $t9 = 2a^2 + 3b^2
+	sll $t9,$t2,1
+	add $t9,$t5,$t9
+
+loopelip1:
+	ble  $t9,$t7,sailoopelip1
+
+		ble $zero,$t4,menosy 
+			add $t4,$t4,$t5
+			add $t5,$t5,$t6
+			add $t7,$t7,$t6
+		j plot
+menosy:
+			add $t4,$t4,$t7
+			add $t5,$t5,$t6	
+			add $t7,$t7,$t8
+			addi $t1,$t1,-1
+plot:
+		addi $t0,$t0,1
+	
+		add $a0,$s0,$t0
+		add $a1,$s1,$t1
+			jal funcao_ponto
+		add $a0,$s0,$t0
+		sub $a1,$s1,$t1
+			jal funcao_ponto
+		sub $a0,$s0,$t0
+		add $a1,$s1,$t1
+			jal funcao_ponto
+		sub $a0,$s0,$t0
+		sub $a1,$s1,$t1
+			jal funcao_ponto
+	j loopelip1
+
+sailoopelip1:
+	# $t4 = P
+	sll $a0,$t1,2
+	addi $a0,$a0,-3
+	mul $a0,$a0,$t2
+	sll $a1,$t0,2
+	addi $a1,$a1,3
+	mul $a1,$a1,$t3
+	add $a1,$a1,$a0
+	addi $a1,$a1,2
+	sra $a1,$a1,2
+	sub $t4,$t4,$a1
+	
+	# t9 = PE
+	move $t9,$t5
+	
+	# $t5 = PS
+	mul $t5,$t1,-2
+	addi $t5,$t5,3
+	mul $t5,$t5,$t2
+
+	#t6 = PSE
+	mul $t6,$t2,3
+	sll $a0,$t3,1
+	add $t6,$t6,$a0
+
+	#t7 = PS2
+	sll $t7,$t2,1
+
+loopelip2:
+	ble $t1,$zero,sailoopelip2
+		ble $t4,$zero,maisx
+			add $t4,$t4,$t5
+			add $t5,$t5,$t7
+			add $t6,$t6,$t7
+			j plot2
+maisx:
+			add $t4,$t4,$t6
+			add $t5,$t5,$t7
+			add $t6,$t6,$t8
+			addi $t0,$t0,1
+plot2:
+		addi $t1,$t1,-1
+		
+		add $a0,$s0,$t0
+		add $a1,$s1,$t1
+			jal funcao_ponto
+		add $a0,$s0,$t0
+		sub $a1,$s1,$t1
+			jal funcao_ponto
+		sub $a0,$s0,$t0
+		add $a1,$s1,$t1
+			jal funcao_ponto
+		sub $a0,$s0,$t0
+		sub $a1,$s1,$t1
+			jal funcao_ponto
+		j loopelip2
+sailoopelip2:
+
+	lw $ra,0($sp)
+	lw $s0,4($sp)
+	lw $s1,8($sp)
+	addi $sp,$sp,12
+	jr $ra
+	
 main:	
 	# pinta a tela de branco
  	li $t0,0xff000000
@@ -479,6 +632,10 @@ main:
  	li $a1,20
  	li $a2,0x65
  	jal preenche
+ 	
+ 	la $a0,elips
+ 	li $a2,0x54
+ 	jal elipse
  sai:
  	li $v0,10
 	syscall
