@@ -9,6 +9,7 @@
  cords: .word 5, 20, 20, 1,200, 120, 200, 120, 20 , 80,140
  nconv:  .word 5, 20, -0, 1,200, 120, 200, 120, 20 , 80,140
  elips: .word 138,10,300,70,100,30
+ elips2: .word 204,15,280,80,115
 .text
 j main
 
@@ -435,163 +436,65 @@ endcirculo:
 	addi $sp,$sp,28
 	jr $ra
 	
-elipse:
-	# $a0 = endereco do centro e raios, $a2 = cor
-	subi $sp,$sp,12
+elipse2:
+	# a0 endereco dos focos e raios, a2 cor
+	subi $sp,$sp,4
 	sw $ra,0($sp)
-	sw $s0,4($sp)
-	sw $s1,8($sp)
 	
-	lw $s0,0($a0)
-	lw $s1,4($a0)
-	lw $t2,8($a0)
-	lw $t3,12($a0)
-	add $s0,$s0,$t2
-	sra $s0,$s0,1 # centro x
-	add $s1,$s1,$t3
-	sra $s1,$s1,1 # centro y
+	lw $t0,0($a0) # f1x
+	lw $t1,4($a0) # f1y
+	lw $t2,8($a0) # f2x
+	lw $t3,12($a0) # f2y
+	lw $t4,16($a0) # distancia focal
 	
-	lw $t2,16($a0)
-	lw $t3,20($a0)
-
-	li $t0,0 # x inicial
-	move $t1,$t3 # y inicial
-	mul $t2,$t2,$t2 # a^2
-	move $a3,$t3
-	mul $t3,$t3,$t3 # b^2
-	# $t4 = P
-	mul $t4,$a3,-4
-	addi $t4,$t4,1
-	mul $t4,$t4,$t2
-	addi $t4,$t4,-2
-	sra $t4,$t4,2
-	add $t4,$t4,$t3
-
-	# $t5 = PE
-	mul $t5,$t3,3
-
-	# $t6 = PE2
-	sll $t6,$t3,1
-
-	# $t7 = PSE
-	addi $t7,$a3,-1
-	mul $t7,$t7,$t2
-	mul $t7,$t7,-2
-	add $t7,$t5,$t7
-
-	# t8 = PSE2
-	mul $t8,$t2,2
-	add $t8,$t6,$t8
-	
-	add $a0,$s0,$t0
-	add $a1,$s1,$t1
-		jal funcao_ponto
-	add $a0,$s0,$t0
-	sub $a1,$s1,$t1
-		jal funcao_ponto
-	sub $a0,$s0,$t0
-	add $a1,$s1,$t1
-		jal funcao_ponto
-	sub $a0,$s0,$t0
-	sub $a1,$s1,$t1
-		jal funcao_ponto
-	# $t9 = 2a^2 + 3b^2
-	sll $t9,$t2,1
-	add $t9,$t5,$t9
-
-loopelip1:
-	ble  $t9,$t7,sailoopelip1
-
-		ble $zero,$t4,menosy 
-			add $t4,$t4,$t5
-			add $t5,$t5,$t6
-			add $t7,$t7,$t6
-		j plot
-menosy:
-			add $t4,$t4,$t7
-			add $t5,$t5,$t6	
-			add $t7,$t7,$t8
-			addi $t1,$t1,-1
-plot:
-		addi $t0,$t0,1
-	
-		add $a0,$s0,$t0
-		add $a1,$s1,$t1
-			jal funcao_ponto
-		add $a0,$s0,$t0
-		sub $a1,$s1,$t1
-			jal funcao_ponto
-		sub $a0,$s0,$t0
-		add $a1,$s1,$t1
-			jal funcao_ponto
-		sub $a0,$s0,$t0
-		sub $a1,$s1,$t1
-			jal funcao_ponto
-	j loopelip1
-
-sailoopelip1:
-	# $t4 = P
-	sll $a0,$t1,2
-	addi $a0,$a0,-3
-	mul $a0,$a0,$t2
-	sll $a1,$t0,2
-	addi $a1,$a1,3
-	mul $a1,$a1,$t3
-	add $a1,$a1,$a0
-	addi $a1,$a1,2
-	sra $a1,$a1,2
-	sub $t4,$t4,$a1
-	
-	# t9 = PE
-	move $t9,$t5
-	
-	# $t5 = PS
-	mul $t5,$t1,-2
-	addi $t5,$t5,3
-	mul $t5,$t5,$t2
-
-	#t6 = PSE
-	mul $t6,$t2,3
-	sll $a0,$t3,1
-	add $t6,$t6,$a0
-
-	#t7 = PS2
-	sll $t7,$t2,1
-
-loopelip2:
-	ble $t1,$zero,sailoopelip2
-		ble $t4,$zero,maisx
-			add $t4,$t4,$t5
-			add $t5,$t5,$t7
-			add $t6,$t6,$t7
-			j plot2
-maisx:
-			add $t4,$t4,$t6
-			add $t5,$t5,$t7
-			add $t6,$t6,$t8
-			addi $t0,$t0,1
-plot2:
-		addi $t1,$t1,-1
-		
-		add $a0,$s0,$t0
-		add $a1,$s1,$t1
-			jal funcao_ponto
-		add $a0,$s0,$t0
-		sub $a1,$s1,$t1
-			jal funcao_ponto
-		sub $a0,$s0,$t0
-		add $a1,$s1,$t1
-			jal funcao_ponto
-		sub $a0,$s0,$t0
-		sub $a1,$s1,$t1
-			jal funcao_ponto
-		j loopelip2
-sailoopelip2:
-
+	mtc1 $t4,$f3
+	cvt.s.w $f3,$f3
+	li $t7,0
+	li $t8,-1
+	li $t6,1
+	mtc1 $t6,$f5
+	cvt.s.w $f5,$f5
+	li $t6,0
+loope:
+	bgt $t7,239,sailoope
+loope2:
+		bgt $t8,319,sailoope2
+			addi $t8,$t8,1
+			
+			sub $a0,$t8,$t0
+			sub $a1,$t7,$t1
+			mul $a0,$a0,$a0
+			mul $a1,$a1,$a1
+			add $t5,$a1,$a0
+			mtc1 $t5,$f1
+			cvt.s.w $f1,$f1
+			sqrt.s $f1,$f1
+			
+			sub $a0,$t8,$t2
+			sub $a1,$t7,$t3
+			mul $a0,$a0,$a0
+			mul $a1,$a1,$a1
+			add $t6,$a1,$a0
+			mtc1 $t6,$f2
+			cvt.s.w $f2,$f2
+			sqrt.s $f2,$f2
+			
+			add.s $f2,$f1,$f2
+			sub.s $f4,$f3,$f2
+			abs.s $f4,$f4
+			c.lt.s $f4,$f5
+			bc1f loope2
+				move $a0,$t8
+				move $a1,$t7
+					jal funcao_ponto
+		j loope2
+sailoope2:
+		addi $t7,$t7,1
+		li $t8,-1
+	j loope
+sailoope:
 	lw $ra,0($sp)
-	lw $s0,4($sp)
-	lw $s1,8($sp)
-	addi $sp,$sp,12
+	addi $sp,$sp,4
 	jr $ra
 	
 main:	
@@ -604,11 +507,9 @@ main:
  	sw $a2,0($t0)
  	addi $t0,$t0,4
  	j tela
- 	# teste quadrado
- cMain:	
- 
- 	la $a0,coo
- 	li $a2,0x21
+cMain:
+	la $a0,coo
+ 	li $a2,0x77
  	jal funcao_reta
  	 # teste circulo
  	li $a2,0x70
@@ -640,9 +541,10 @@ main:
  	li $a2,0x65
  	jal preenche
  	
- 	la $a0,elips
+ 	#teste elipse
  	li $a2,0x54
- 	jal elipse
+ 	la $a0,elips2
+ 	jal elipse2
  sai:
  	li $v0,10
 	syscall
