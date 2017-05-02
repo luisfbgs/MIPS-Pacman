@@ -10,10 +10,12 @@
  nconv:  .word 5, 20, -0, 1,200, 120, 200, 120, 20 , 80,140
  elips: .word 138,10,300,70,100,30
  elips2: .word 204,15,280,80,115
+triangle: .word 3,0,0,0,0,0,0
 .text
 j main
 
 coordsverify:
+	# a0 = x, $a1 = y
 	bgt $a0,319,errocoord
 	bgt $a1,239,errocoord
 	bltz $a0,errocoord
@@ -437,7 +439,7 @@ endcirculo:
 	jr $ra
 	
 elipse2:
-	# a0 endereco dos focos e raios, a2 cor
+	# a0 endereco dos focos e distancia
 	subi $sp,$sp,4
 	sw $ra,0($sp)
 	
@@ -445,7 +447,7 @@ elipse2:
 	lw $t1,4($a0) # f1y
 	lw $t2,8($a0) # f2x
 	lw $t3,12($a0) # f2y
-	lw $t4,16($a0) # distancia focal
+	lw $t4,16($a0) # distancia
 	
 	mtc1 $t4,$f3
 	cvt.s.w $f3,$f3
@@ -455,6 +457,9 @@ elipse2:
 	mtc1 $t6,$f5
 	cvt.s.w $f5,$f5
 	li $t6,0
+	
+	# passa por todo bitmap e pinta as posicoes em que a diferenca entre soma das distancias do ponto pros focos
+	# e a distancia que se quer eh menor que 1
 loope:
 	bgt $t7,239,sailoope
 loope2:
@@ -493,6 +498,71 @@ sailoope2:
 		li $t8,-1
 	j loope
 sailoope:
+	lw $ra,0($sp)
+	addi $sp,$sp,4
+	jr $ra
+
+triangulo:
+	# a0 centro x, a1 centro y, a2 cor, a3 lado
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+	
+	# calcula altura/3 e salva em $t6
+	li $t0,3
+	li $t1,6
+	mtc1 $t0,$f0
+	mtc1 $t1,$f1
+	mtc1 $a3,$f2
+	cvt.s.w $f0,$f0
+	cvt.s.w $f1,$f1
+	cvt.s.w $f2,$f2
+	sqrt.s $f0,$f0
+	mul.s $f0,$f0,$f2
+	div.s $f0,$f0,$f1
+	round.w.s $f0,$f0
+	mfc1 $t6,$f0
+	
+	move $t4,$a0
+	move $t5,$a1
+	
+	sll $t0,$t6,1
+	la $t1,triangle
+	
+	li $t2,3
+	sw $t2,0($t1)
+	sub $t3,$t5,$t0
+	
+	move $a0,$t4
+	move $a1,$t3
+	jal coordsverify
+	bnez $v0,trierro
+	
+	sw $t4,4($t1)
+	sw $t3,8($t1)
+	add $t5,$t5,$t6
+	srl $t2,$a3,1
+	sub $t2,$t4,$t2
+	
+	move $a0,$t2
+	move $a1,$t5
+	jal coordsverify
+	bnez $v0,trierro
+	
+	sw $t2,12($t1)
+	sw $t5,16($t1)
+	add $t2,$t2,$a3
+	
+	move $a0,$t2
+	move $a1,$t5
+	jal coordsverify
+	bnez $v0,trierro
+	
+	sw $t2,20($t1)
+	sw $t5,24($t1)
+	la $a0,triangle
+	jal funcao_poligono 
+
+trierro:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	jr $ra
@@ -545,6 +615,15 @@ cMain:
  	li $a2,0x54
  	la $a0,elips2
  	jal elipse2
+	
+	#teste triangulo
+	li $a0,140
+ 	li $a1,140
+ 	li $a2,0x00
+ 	li $a3,125
+ 	jal triangulo
+
+
  sai:
  	li $v0,10
 	syscall
