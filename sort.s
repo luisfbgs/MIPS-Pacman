@@ -1,19 +1,19 @@
 	
 	
 	# .gnu_attribute 
-	# .file indica que o que se segue È o nome de um arquivo 
+	# .file indica que o que se segue √© o nome de um arquivo 
 	.file	1 "sortc.c"
-	# .section indica em que sess„o o cÛdico ser· montado
+	# .section indica em que sess√£o o c√≥dico ser√° montado
 	.section .mdebug.abi32		# .mdebug contem a tabela de simbolos do MIPS
-	# .previous permite alternar entre duas seÁıes ELFs(executable and linking format), possibilitando arquivos mais densos
+	# .previous permite alternar entre duas se√ß√µes ELFs(executable and linking format), possibilitando arquivos mais densos
 	.previous
-	# .nan legacy indica que o montador deve utilizar a representaÁ„o original de Not a Number
+	# .nan legacy indica que o montador deve utilizar a representa√ß√£o original de Not a Number
 	.nan	legacy
 	.module	fp=32
 	.module	oddspreg
-	# .globl declara que o endereÁo È global para ser referenciado
+	# .globl declara que o endere√ßo √© global para ser referenciado
 	.globl	v
-	# .data informa ao montador que o conteudo a seguir È dado na memÛria 
+	# .data informa ao montador que o conteudo sao dados para o programa 
 	.data
 	# .align informa ao montador que a memoria esta ordenada por words (0=byte, 1=half, 2=word, 3=double)
 	.align	2
@@ -21,7 +21,7 @@
 	# .size informa ao montador que v tem tamanho 40, ou seja 10 words, v[10]
 	.size	v, 40
 v:	
-	# .word indica ao montador que o valor È uma word, 32 bits
+	# .word indica ao montador que o valor √© uma word, 32 bits
 	.word	5
 	.word	8
 	.word	3
@@ -32,30 +32,30 @@ v:
 	.word	0
 	.word	1
 	.word	9
-	# .rdata È similar a funÁ„o do .data, porÈm nao pode ser modificada em tempo de execuÁao
+	# .rdata √© similar a fun√ß√£o do .data, por√©m nao pode ser modificada em tempo de execu√ßao
 	.rdata
 	.align	2
 .LC0:
-	# .ascii informa ao montador que o dado È um char ou um conjunto de chars, que est· ordenado por bytes
+	# .ascii informa ao montador que o dado √© um char ou um conjunto de chars, que est√° ordenado por bytes
 	.ascii	"%d\011\000"
-	# .text informa ao montador que a partir desse endereÁo est· o programa a ser montado
+	# .text informa ao montador que a partir desse endere√ßo est√° o programa a ser montado
 	.text
 	.align	2
 	.globl	show
 	.set	nomips16
 	.set	nomicromips
-	# .ent show informa ao montador o comeÁo da funÁao show
+	# .ent show informa ao montador o come√ßo da fun√ßao show
 	.ent	show
-	# .type informa qual È o tipo do elemento, no caso "show" È uma funcao
+	# .type informa qual √© o tipo do elemento, no caso "show" √© uma funcao
 	.type	show, @function
 show:
 	# .frame declara o frame pointer $fp
 	.frame	$fp,32,$31		# vars= 8, regs= 2/0, args= 16, gp= 0
 	# .mask indica quais regs serao salvos na pilha da funcao a partir de uma mascara de bits em que cada bit indica um reg salvo
 	.mask	0xc0000000,-4
-	# .fmask È semelhante a mask porem utiliza os registradores em ponto flutuante
+	# .fmask √© semelhante a mask porem utiliza os registradores em ponto flutuante
 	.fmask	0x00000000,0
-	# .set ativa ou desativa algumas caracteristicas do montador: noreorder impede de serem eliminados instruÁoes nops desnecessarios
+	# .set ativa ou desativa algumas caracteristicas do montador: noreorder impede de serem eliminados instru√ßoes nops desnecessarios
 	.set	noreorder
 	.set	nomacro
 	addiu	$sp,$sp,-32
