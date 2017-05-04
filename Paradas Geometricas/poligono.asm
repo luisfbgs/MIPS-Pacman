@@ -11,11 +11,11 @@
  elips: .word 138,10,300,70,100,30
  elips2: .word 204,15,280,80,115
 triangle: .word 3,0,0,0,0,0,0
-BRASIL: .asciiz "brasil.bin"
-USA: .asciiz "usa.bin"
-JAPAO: .asciiz "japao.bin"
-BUTAO: .asciiz "butao.bin"
-LAMAR: .asciiz "lamar.bin"
+BRASIL: .asciiz "src/brasil.bin"
+USA: .asciiz "src/usa.bin"
+JAPAO: .asciiz "src/japao.bin"
+BUTAO: .asciiz "src/butao.bin"
+LAMAR: .asciiz "src/lamar.bin"
 
 .text
 j main
