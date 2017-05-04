@@ -11,6 +11,12 @@
  elips: .word 138,10,300,70,100,30
  elips2: .word 204,15,280,80,115
 triangle: .word 3,0,0,0,0,0,0
+BRASIL: .asciiz "brasil.bin"
+USA: .asciiz "usa.bin"
+JAPAO: .asciiz "japao.bin"
+BUTAO: .asciiz "butao.bin"
+LAMAR: .asciiz "lamar.bin"
+
 .text
 j main
 
@@ -24,6 +30,28 @@ coordsverify:
 	jr $ra
 errocoord:
 	li $v0,1
+	jr $ra
+
+FLAG:
+	li $a1,0
+	li $a2,0
+	li $v0,13
+	syscall
+	
+	# Transfer all the file to the VGA memory
+	move $a0,$v0
+	la $a1,0xFF000000
+	li $a2,76800
+	li $v0,14
+	syscall
+
+	# Closes the file
+	li $v0,16
+	syscall
+	
+	li $v0,10
+	syscall
+	
 	jr $ra
 
 funcao_ponto:
