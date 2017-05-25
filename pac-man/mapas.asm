@@ -143,6 +143,8 @@ erropon:
 endreta:
 
 mapa:
+	#salvar dps s0 e s1 na pilha
+	
 	la $a0,coordinates1
 	li $a2,0
 	li $s0,0
@@ -157,7 +159,7 @@ mapa:
 		  j for_mapa1
 	end_for_mapa1:		
 	
-	#5 iterações
+	#5 iteraÃ§Ãµes
 	la $a0,coordinates2
 	li $s0,0
 	li $s1,10
