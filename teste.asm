@@ -3,6 +3,10 @@
 	out2: .asciiz "\n"
 	in1: .word 1
 	in2: .word 2
+	in3: .float 1.5
+	in4: .float 4.0
+	cpmuls: .float 6.0
+	cpadds: .float 5.5
 .text
 j main
 error: 
@@ -249,8 +253,58 @@ op_div:
 	bne $t0,$t2,error
 	
 	jr $ra
-																												
+	
+op_mthi_mtlo:
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+	li $t0,2
+	li $a0,22
+	li $t2,2
+	
+	mthi $t0
+	mfhi $t1
+	
+	bne $t1,$t2,chamaerror
+	j try2
+	chamaerror: jal error
+	lw $ra,0($sp)	
+	addi $sp,$sp,4
+		
+	try2:li $a0,23
+	mtlo $t0
+	mflo $t1
+	
+	bne $t1,$t2,error
+	jr $ra	
+	
+opmuls: 
+	l.s $f0,in3																																																					
+	l.s $f1,in4	
+	l.s $f2,cpmuls		#f2 = 6
+	li $a0,24
+	
+	mul.s $f0,$f0,$f1
+	
+	c.eq.s $f0,$f2
+	bc1f error
+	
+	jr $ra		
+	
+opadds:
+	l.s $f0,in3																																																					
+	l.s $f1,in4	
+	l.s $f2,cpadds	
+	li $a0,25
+	
+	add.s $f0,$f0,$f1
+	
+	c.eq.s $f0,$f2
+	bc1f error
+	
+	jr $ra			
+																																																																																																																																																										
 main: 
+	#ULA
 	jal soma 		#1
 	jal multiplicacao 	#2
 	jal subtracao 		#3
@@ -270,3 +324,8 @@ main:
 	jal op_sltu		#18
 	jal op_lui		#19
 	jal op_div		#20/21
+	jal op_mthi_mtlo	#22/23
+	
+	#FPULA
+	jal opmuls
+	jal opadds
