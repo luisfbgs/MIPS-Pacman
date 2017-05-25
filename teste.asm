@@ -195,7 +195,7 @@ op_xor:
 	li $t0,2
 	li $t1,3
 	li $t2,1
-	li $a0,17
+	li $a0,16
 	
 	xor $t0,$t0,$t1
 	
@@ -206,7 +206,7 @@ op_nor:
 	li $t0,0
 	li $t1,0
 	li $t2,-1
-	li $a0,18
+	li $a0,17
 	
 	nor $t0,$t0,$t1
 	
@@ -217,7 +217,7 @@ op_sltu:
 	lw $t0,in1
 	li $t1,-1
 	li $t2,1
-	li $a0,19
+	li $a0,18
 	
 	sltu $t0,$t0,$t1
 	
@@ -227,7 +227,7 @@ op_sltu:
 op_lui:
 	lui $t0,0xFFFF
 	la $t2,0xFFFF0000
-	li $a0,21	
+	li $a0,19	
 	
 	bne $t0,$t2,error
 	jr $ra	
@@ -236,7 +236,7 @@ op_div:
 	li $t0,31
 	li $t1,2
 	li $t2,15
-	li $a0,22
+	li $a0,20
 		
 	div $t0,$t1
 	mflo $t0
@@ -245,7 +245,7 @@ op_div:
 	
 	mfhi $t0
 	li $t2,1
-	li $a0,23
+	li $a0,21
 	bne $t0,$t2,error
 	
 	jr $ra
@@ -261,12 +261,12 @@ main:
 	jal op_srl		#9
 	jal op_slt		#10
 	jal op_sgt		#11
-	jal op_sra
-	jal op_srav
-	jal op_sllv
-	jal op_srlv
-	jal op_xor
-	jal op_nor
-	jal op_sltu
-	jal op_lui
-	jal op_div
+	jal op_sra		#12
+	jal op_srav		#13
+	jal op_sllv		#14
+	jal op_srlv		#15
+	jal op_xor		#16
+	jal op_nor		#17	
+	jal op_sltu		#18
+	jal op_lui		#19
+	jal op_div		#20/21
