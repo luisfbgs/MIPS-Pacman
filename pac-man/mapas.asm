@@ -5,7 +5,8 @@
  coordinates2: .word 3,3 , 3,77 , 43,77 , 43,163 , 3,163 , 3,200 , 17,200 , 17,207
   , 3,207 , 3,236 , 316,236
   
- cor: 0x00
+ cor: 0xff
+
  
 .text
 
@@ -142,31 +143,32 @@ erropon:
 	jr $ra
 endreta:
 
+loop_mapa:
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+	for_mapa1: 
+		beq $s0,$s1,end_for_mapa1
+		jal funcao_reta
+		addi $a0,$a0,8
+		addi $s0,$s0,1
+		j for_mapa1
+	end_for_mapa1:
+		lw $ra,0($sp)
+		addi $sp,$sp,4
+		jr $ra
+
 mapa:
 	#salvar dps s0 e s1 na pilha
 	
 	la $a0,coordinates1
-	li $a2,0
+	li $a2,0xC0
 	li $s0,0
 	li $s1,12
-	
-	#j end_for_mapa1 #RETIRAR ISSO(DEBUG APENAS)
-	
-	for_mapa1: beq $s0,$s1,end_for_mapa1
-		  jal funcao_reta
-		  addi $a0,$a0,8
-		  addi $s0,$s0,1
-		  j for_mapa1
-	end_for_mapa1:		
-	
+	jal loop_mapa
+				
 	#5 iterações
 	la $a0,coordinates2
 	li $s0,0
 	li $s1,10
-	
-	for_mapa2: beq $s0,$s1,end_for_mapa2
-	       	   jal funcao_reta
-		   addi $a0,$a0,8
-		   addi $s0,$s0,1
-		   j for_mapa2
-	end_for_mapa2:
+	jal loop_mapa
+			
