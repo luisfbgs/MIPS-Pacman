@@ -6,6 +6,7 @@
  coordinates3: .word 18,18 , 56,18 , 56,35 , 18,35 , 18,18
  coordinates4: .word 18,50 , 56,50 ,  56,62 , 18,62 , 18,50
  coordinates5: .word 140,18 , 71,18 , 71,35 , 140,35 , 140,18
+ coordinates6: .word 71,50 , 71,120 , 80,120 , 80,90 , 140,90 , 140,80 , 80,80 , 80,50 , 71,50
   
  cor: 0xff
 
@@ -189,15 +190,13 @@ mapa:
 	li $s0,0
 	li $s1,7
 	jal loop_mapa	
-	#5 iterações
+	#5 iteraÃ§Ãµes
 	debug:
 	la $a0,coordinates2
 	li $s0,0
 	li $s1,13
 	jal loop_mapa
-	
-	
-	
+			
 	la $a0,coordinates3
 	li $s0,0
 	li $s1,4
@@ -211,4 +210,9 @@ mapa:
 	la $a0,coordinates5
 	li $s0,0
 	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates6
+	li $s0,0
+	li $s1,8
 	jal loop_mapa
