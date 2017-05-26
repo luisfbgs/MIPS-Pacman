@@ -5,8 +5,11 @@
 	in2: .word 2
 	in3: .float 1.5
 	in4: .float 4.0
+	in5: .float 2.0
+	in6: .float -2.0
 	cpmuls: .float 6.0
 	cpadds: .float 5.5
+	cpsubs: .float 2.5
 .text
 j main
 error: 
@@ -277,7 +280,7 @@ op_mthi_mtlo:
 	bne $t1,$t2,error
 	jr $ra	
 	
-opmuls: 
+op_muls: 
 	l.s $f0,in3																																																					
 	l.s $f1,in4	
 	l.s $f2,cpmuls		#f2 = 6
@@ -290,7 +293,7 @@ opmuls:
 	
 	jr $ra		
 	
-opadds:
+op_adds:
 	l.s $f0,in3																																																					
 	l.s $f1,in4	
 	l.s $f2,cpadds	
@@ -302,9 +305,123 @@ opadds:
 	bc1f error
 	
 	jr $ra			
-																																																																																																																																																										
+
+op_subs:
+	l.s $f0,in3
+	l.s $f1,in4
+	l.s $f2,cpsubs
+	li $a0,26
+	
+	sub.s $f0,$f1,$f0
+	
+	c.eq.s $f0,$f2
+	bc1f error
+	
+	jr $ra
+
+op_divs:
+	l.s $f0,in5
+	l.s $f1,in4
+	li $a0,27
+	
+	div.s $f1,$f1,$f0
+	
+	c.eq.s $f0,$f1
+	bc1f error
+	
+	jr $ra
+
+op_sqrt:
+	l.s $f0,in5
+	l.s $f1,in4
+	li $a0,28
+	
+	sqrt.s $f1,$f1
+	
+	c.eq.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+
+op_abs:
+	l.s $f0,in5
+	l.s $f1,in6
+	li $a0,29
+	
+	abs.s $f1,$f1
+	
+	c.eq.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+	
+op_neg:
+	l.s $f0,in5
+	l.s $f1,in6
+	li $a0,30
+	
+	neg.s $f0,$f0
+	
+	c.eq.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+	
+op_ceq:
+	l.s $f0,in5
+	l.s $f1,in5
+	li $a0,31
+
+	c.eq.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+	
+op_clt:
+	l.s $f0,in4
+	l.s $f1,in5
+	li $a0,32
+
+	c.lt.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+
+op_cle:
+	l.s $f0,in4
+	l.s $f1,in5
+	li $a0,33
+
+	c.le.s $f1,$f0
+	bc1f error
+	
+	jr $ra
+	
+op_cvtsw:
+	l.s $f0,in5
+	lw $t0,in2
+	cvt.w.s $f1,$f0
+	mfc1 $t1,$f1
+	li $a0,34
+
+	beq $t1,$t0,sai
+	j error
+sai:
+	jr $ra
+
+op_cvtws:
+	lw $t0,in2
+	mtc1 $t0,$f1
+	cvt.s.w $f1,$f1
+	l.s $f0,in5
+	li $a0,35
+
+	c.eq.s $f1,$f0
+	bc1f error
+	
+	jr $ra
 main: 
-	#ULA
+	#ULA			#codigo de erro
 	jal soma 		#1
 	jal multiplicacao 	#2
 	jal subtracao 		#3
@@ -327,5 +444,15 @@ main:
 	jal op_mthi_mtlo	#22/23
 	
 	#FPULA
-	jal opmuls
-	jal opadds
+	jal op_muls		#24
+	jal op_adds		#25
+	jal op_subs		#26
+	jal op_divs		#27
+	jal op_sqrt		#28
+	jal op_abs		#29
+	jal op_neg		#30
+	jal op_ceq		#31
+	jal op_clt		#32
+	jal op_cle		#33
+	jal op_cvtsw		#34
+	jal op_cvtws		#35	
