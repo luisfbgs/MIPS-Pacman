@@ -3,7 +3,12 @@
  coordinates1: .word 0,0 , 0,80 , 40,80 , 40,160 , 0,160 , 0,239 , 319,239 , 319,160
   , 280,160 , 280,80 ,  319,80 , 319,0 , 0,0 
  coordinates2: .word 3,3 , 3,77 , 43,77 , 43,163 , 3,163 , 3,200 , 17,200 , 17,207
-  , 3,207 , 3,236 , 316,236
+  , 3,207 , 3,236 , 316,236 , 316,207 , 302,207 , 302,200 , 316,200 , 316,163 , 277,163
+  , 277,77 , 316,77 ,316,3 , 163,3 163,35, 159,35 , 159,3 , 3,3
+  
+ coordinates3: .word 18,18 , 56,18 , 56,35 , 18,35 , 18,18
+ coordinates4: .word 18,50 , 56,50 ,  56,62 , 18,62 , 18,50
+ coordinates5: .word 144,18 , 71,18 , 71,35 , 144,35 , 144,18
   
  cor: 0xff
 
@@ -156,9 +161,24 @@ loop_mapa:
 		lw $ra,0($sp)
 		addi $sp,$sp,4
 		jr $ra
-
+		
+ preenchetela:	
+	# pinta a tela de branco
+ 	li $t0,0xff000000
+ 	li $t1,0xff012c00
+ 	li $a2,0x00000000
+ tela:
+ 	beq $t0,$t1,cMain
+ 	sw $a2,0($t0)
+ 	addi $t0,$t0,4
+ 	j tela	
+ 	cMain: jr $ra
+	
 mapa:
 	#salvar dps s0 e s1 na pilha
+	jal preenchetela
+	#j debug
+
 	
 	la $a0,coordinates1
 	li $a2,0xC0
@@ -167,8 +187,23 @@ mapa:
 	jal loop_mapa
 				
 	#5 iterações
+	debug:
 	la $a0,coordinates2
 	li $s0,0
-	li $s1,10
+	li $s1,24
 	jal loop_mapa
-			
+	
+	la $a0,coordinates3
+	li $s0,0
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates4
+	li $s0,0
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates5
+	li $s0,0
+	li $s1,4
+	jal loop_mapa
