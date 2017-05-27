@@ -14,6 +14,7 @@
  coordinates11: .word 166,165 , 95,165 , 95,185 , 151,185 , 151,221 , 166,221
  coordinates12: .word 18,200 , 56,200 , 56,221 , 18,221 , 18,200
  coordinates13: .word 71,200 , 136,200 , 136,221 , 71,221 , 71,200
+ food_cooridnate1: .word 10,18 , 63,18
  
  cor: 0xff
 
@@ -161,6 +162,7 @@ erropon:
 endreta:
 
 loop_mapa:
+	li $s0,0
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
 	for_mapa1: 
@@ -184,79 +186,112 @@ loop_mapa:
  	sw $a2,0($t0)
  	addi $t0,$t0,4
  	j tela	
- 	cMain: jr $ra
+ 	cMain: jr $ra 	
+ 	
+loop_food:
+	addi $sp,$sp,-12
+	sw $ra,0($sp)
+	sw $a0,4($sp)
+	sw $a1,8($sp)	
+		
+	lw $a1,4($a0)
+	lw $a0,0($a0)
+	li $s0,0
+	
+	loop_food_for: beq $s0,$s1,end_loop_food_for
+		jal funcao_ponto
+		addi $a0,$a0,1
+		jal funcao_ponto
+		addi $a1,$a1,1
+		jal funcao_ponto
+		addi $a0,$a0,-1
+		jal funcao_ponto
+		
+		addi $a1,$a1,7
+		
+		addi $s0,$s0,1
+	j loop_food_for
+	end_loop_food_for:
+	
+	lw $ra,0($sp)
+	lw $a0,4($sp)
+	lw $a1,8($sp)
+	addi $sp,$sp,12
+	
+	jr $ra
 	
 mapa:
-	#salvar dps s0 e s1 na pilha
-	jal preenchetela
-	#j debug
+	addi $sp,$sp,-8
+	sw $s0,0($sp)
+	sw $s1,4($sp)	
 
+	jal preenchetela
 	
 	la $a0,coordinates1
 	li $a2,0xC0
-	li $s0,0
 	li $s1,7
 	jal loop_mapa	
-	#5 iterações
-	debug:
+
 	la $a0,coordinates2
-	li $s0,0
 	li $s1,9
 	jal loop_mapa
 			
 	la $a0,coordinates3
-	li $s0,0
 	li $s1,4
 	jal loop_mapa
 	
 	la $a0,coordinates4
-	li $s0,0
 	li $s1,4
 	jal loop_mapa
 	
-	la $a0,coordinates5
-	li $s0,0
+	la $a0,coordinates5	
 	li $s1,4
 	jal loop_mapa
 	
 	la $a0,coordinates6
-	li $s0,0
 	li $s1,8
 	jal loop_mapa
 	
 	la $a0,coordinates7
-	li $s0,0
 	li $s1,5
 	jal loop_mapa
 	
 	la $a0,coordinates8
-	li $s0,0
 	li $s1,3
 	jal loop_mapa
 	
 	la $a0,coordinates9
-	li $s0,0
 	li $s1,4
 	jal loop_mapa
 	
 	la $a0,coordinates10
-	li $s0,0
 	li $s1,6
 	jal loop_mapa
 	
 	la $a0,coordinates11
-	li $s0,0
 	li $s1,5
 	jal loop_mapa
 	
 	la $a0,coordinates12
-	li $s0,0
 	li $s1,4
 	jal loop_mapa
 	
 	la $a0,coordinates13
-	li $s0,0
 	li $s1,4
 	jal loop_mapa
 	
+	#COMIDA DE GORILA
 	
+	la $a0,food_cooridnate1
+	la $a2,0xFFFFFFFF
+	li $s1,6
+	jal loop_food
+	
+	la $a0,food_cooridnate1
+	addi $a0,$a0,8
+	li $s1,20
+	jal loop_food
+	
+	addi $sp,$sp,8
+	lw $s0,0($sp)
+	lw $s1,4($sp)
