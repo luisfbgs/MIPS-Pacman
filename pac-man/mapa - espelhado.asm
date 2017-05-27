@@ -1,13 +1,16 @@
 .data
  baseadd: .word 0xff000000
  coordinates1: .word 159,0 ,  0,0 , 0,80 , 40,80 , 40,160 , 0,160 , 0,239 , 159,239
- coordinates2: .word 159,35, 155,35 , 155,3 , 3,3 , 3,77 , 43,77 , 43,163  , 3,163 , 3,200 , 17,200 , 17,207 , 3,207 , 3,236 , 159,236
-  
+ coordinates2: .word 159,35, 155,35 , 155,3 , 3,3 , 3,77 , 43,77 , 43,163  
+ , 3,163 , 3,200 , 17,200 , 17,207 , 3,207 , 3,236 , 159,236
  coordinates3: .word 18,18 , 56,18 , 56,35 , 18,35 , 18,18
  coordinates4: .word 18,50 , 56,50 ,  56,62 , 18,62 , 18,50
  coordinates5: .word 140,18 , 71,18 , 71,35 , 140,35 , 140,18
- coordinates6: .word 71,50 , 71,120 , 80,120 , 80,90 , 140,90 , 140,80 , 80,80 , 80,50 , 71,50
-  
+ coordinates6: .word 71,50 , 71,120 , 80,120 , 80,90 , 138,90 , 138,80 , 80,80 , 80,50 , 71,50
+ coordinates7: .word 159,50 , 95,50 , 95,65 , 153,65 , 153,90 , 159,90
+ coordinates8: .word 151,105 , 95,105 , 95,150 , 159,150
+ coordinates9: .word 151,105 , 151,107 , 97,107 , 97,148 , 159,148
+ 
  cor: 0xff
 
  
@@ -181,7 +184,7 @@ loop_mapa:
 	
 mapa:
 	#salvar dps s0 e s1 na pilha
-	#jal preenchetela
+	jal preenchetela
 	#j debug
 
 	
@@ -215,4 +218,19 @@ mapa:
 	la $a0,coordinates6
 	li $s0,0
 	li $s1,8
+	jal loop_mapa
+	
+	la $a0,coordinates7
+	li $s0,0
+	li $s1,5
+	jal loop_mapa
+	
+	la $a0,coordinates8
+	li $s0,0
+	li $s1,3
+	jal loop_mapa
+	
+	la $a0,coordinates9
+	li $s0,0
+	li $s1,4
 	jal loop_mapa
