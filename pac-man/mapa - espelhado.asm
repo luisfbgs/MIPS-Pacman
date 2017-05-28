@@ -14,7 +14,8 @@
  coordinates11: .word 166,165 , 95,165 , 95,185 , 151,185 , 151,221 , 166,221
  coordinates12: .word 18,200 , 56,200 , 56,221 , 18,221 , 18,200
  coordinates13: .word 71,200 , 136,200 , 136,221 , 71,221 , 71,200
- food_coordinate1: .word 10,19 , 63,19 , 10,10 , 63,10
+ food_coordinate1: .word 10,19 , 10,40 , 63,19 , 147,10 , 63,49
+ food_coordinate2: .word 10,10 , 63,10 , 18,40 , 10,69
  
  cor: 0xff
 
@@ -288,25 +289,45 @@ mapa:
 	
 	#vertical aqui
 	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
+	
 	la $a0,food_coordinate1
 	la $a2,0xFFFFFFFF
-	li $s1,6
+	li $s1,2
 	jal loop_food
 	
-	#la $a0,food_coordinate1
 	addi $a0,$a0,8
-	li $s1,16
+	li $s1,3
+	jal loop_food
+		
+	addi $a0,$a0,8
+	li $s1,2
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,4
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,13
 	jal loop_food
 	
 	#horizontal aqui
-	li $s2,1
+	la $a0,food_coordinate2
+	li $s2,1	
 	
-	addi $a0,$a0,8
 	li $s1,6
 	jal loop_food
 	
 	addi $a0,$a0,8
 	li $s1,9
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,14
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,6
 	jal loop_food
 	
 	addi $sp,$sp,8
