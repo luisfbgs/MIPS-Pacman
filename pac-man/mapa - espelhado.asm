@@ -14,7 +14,7 @@
  coordinates11: .word 166,165 , 95,165 , 95,185 , 151,185 , 151,221 , 166,221
  coordinates12: .word 18,200 , 56,200 , 56,221 , 18,221 , 18,200
  coordinates13: .word 71,200 , 136,200 , 136,221 , 71,221 , 71,200
- food_coordinate1: .word 10,19 , 10,40 , 63,19 , 147,10 , 63,49
+ food_coordinate1: .word 10,19 , 10,40 , 63,19 , 147,10 , 63,49 , 63,127
  food_coordinate2: .word 10,10 , 63,10 , 18,40 , 10,69
  
  cor: 0xff
@@ -308,7 +308,11 @@ mapa:
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,13
+	li $s1,8
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,4
 	jal loop_food
 	
 	#horizontal aqui
