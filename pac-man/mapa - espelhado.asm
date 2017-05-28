@@ -14,7 +14,7 @@
  coordinates11: .word 166,165 , 95,165 , 95,185 , 151,185 , 151,221 , 166,221
  coordinates12: .word 18,200 , 56,200 , 56,221 , 18,221 , 18,200
  coordinates13: .word 71,200 , 136,200 , 136,221 , 71,221 , 71,200
- food_cooridnate1: .word 10,18 , 63,18
+ food_coordinate1: .word 10,19 , 63,19 , 10,10 , 63,10
  
  cor: 0xff
 
@@ -207,8 +207,12 @@ loop_food:
 		addi $a0,$a0,-1
 		jal funcao_ponto
 		
-		addi $a1,$a1,7
-		
+		beq $s2,$zero,vertical
+		addi $a0,$a0,9
+		addi $a1,$a1,-1
+		j end
+		vertical:addi $a1,$a1,9
+		end:
 		addi $s0,$s0,1
 	j loop_food_for
 	end_loop_food_for:
@@ -282,14 +286,27 @@ mapa:
 	
 	#COMIDA DE GORILA
 	
-	la $a0,food_cooridnate1
+	#vertical aqui
+	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
+	la $a0,food_coordinate1
 	la $a2,0xFFFFFFFF
 	li $s1,6
 	jal loop_food
 	
-	la $a0,food_cooridnate1
+	#la $a0,food_coordinate1
 	addi $a0,$a0,8
-	li $s1,20
+	li $s1,16
+	jal loop_food
+	
+	#horizontal aqui
+	li $s2,1
+	
+	addi $a0,$a0,8
+	li $s1,6
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,9
 	jal loop_food
 	
 	addi $sp,$sp,8
