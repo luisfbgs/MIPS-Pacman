@@ -14,10 +14,11 @@
  coordinates11: .word 166,172 , 88,172 , 88,183 , 148,183 , 148,219 , 166,219
  coordinates12: .word 16,196 , 51,196 , 51,219 , 16,219 , 16,196
  coordinates13: .word 64,196 , 135,196 , 135,219 , 64,219 , 64,196
- food_coordinate1: .word 10,19 , 63,19 , 10,10 , 63,10
+ food_coordinate1: .word 9,20 , 57,20 , 141,20 , 81,44 , 9,164 , 141,188 , 57,200
+ food_coordinate2: .word 9,9 , 9,44 , 9,68 , 9,164 , 9,188 , 9,224 , 93,68
  pac_position: .word 0
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 125
+ velocidade: .word 90
  aberta: .word 1
  espelho: .word 1
  cor: 0xff
@@ -682,10 +683,10 @@ loop_food:
 		jal funcao_ponto
 		
 		beq $s2,$zero,vertical
-		addi $a0,$a0,9
+		addi $a0,$a0,12
 		addi $a1,$a1,-1
 		j end
-		vertical:addi $a1,$a1,9
+		vertical:addi $a1,$a1,11
 		end:
 		addi $s0,$s0,1
 	j loop_food_for
@@ -764,28 +765,64 @@ mapa:
 	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
 	la $a0,food_coordinate1
 	la $a2,0xFFFFFFFF
+	li $s1,5
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,13
+	jal loop_food
+
+	addi $a0,$a0,8
+	li $s1,2
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,3
+	jal loop_food
+	
+	addi $a0,$a0,8
 	li $s1,6
 	jal loop_food
 	
-	la $a0,food_coordinate1
 	addi $a0,$a0,8
-	li $s1,16
+	li $s1,4
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,2
 	jal loop_food
 	
 	#horizontal aqui
+	la $a0,food_coordinate2
 	li $s2,1
 	
+	li $s1,12
+	jal loop_food	
+	
 	addi $a0,$a0,8
-	li $s1,6
+	li $s1,14
+	jal loop_food	
+	
+	addi $a0,$a0,8
+	li $s1,4
+	jal loop_food	
+	
+	addi $a0,$a0,8
+	li $s1,4
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,9
+	li $s1,11
 	jal loop_food
 	
-	addi $sp,$sp,8
-	lw $s0,0($sp)
-	lw $s1,4($sp)
+	addi $a0,$a0,8
+	li $s1,13
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,5
+	jal loop_food
+
 	
 	la $t0,espelho
 	sw $zero,0($t0)
