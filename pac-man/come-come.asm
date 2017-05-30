@@ -18,7 +18,7 @@
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
  pac_position: .word 0
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 90
+ velocidade: .word 120
  aberta: .word 1
  espelho: .word 1
  mov_ant: .word 0
@@ -32,15 +32,9 @@ j mapa
 pintapac:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utilizados
-	subi $sp,$sp,40
+	subi $sp,$sp,8
 	sw $ra,0($sp)
-	sw $s0,4($sp)
-	sw $s1,8($sp)
-	sw $s2,12($sp)
-	sw $s3,16($sp)
-	sw $s4,20($sp)
-	sw $s5,24($sp)
-	sw $t0,28($sp)
+	sw $t0,4($sp)
 	
 	move $a2,$a0
 	la $a3,5
@@ -125,14 +119,8 @@ endcirculo:
 	jal preenche_pac
 	# recuperar da pilha registradores preservados utilizados
 	lw $ra,0($sp)  
-	lw $s0,4($sp)
-	lw $s1,8($sp)
-	lw $s2,12($sp)
-	lw $s3,16($sp)
-	lw $s4,20($sp)
-	lw $s5,24($sp)
-	lw $t0,28($sp)
-	addi $sp,$sp,40
+	lw $t0,4($sp)
+	addi $sp,$sp,8
 	jr $ra
 
 boca: 
@@ -235,6 +223,21 @@ bfs:
 endpreenche:
 	addi $sp,$sp,4
 	jr $ra
+limpa:
+	li $t6,12
+	addi $t3,$a1,0
+limpaloop:
+	addi $t6,$t6,-1
+	addi $t7,$t3,12
+limpaloop2:    
+	beq $t3,$t7,sailimpaloop
+	sw $a0,0($t3)
+	addi $t3,$t3,4
+	j limpaloop2
+sailimpaloop:
+	addi $t3,$t3,308
+	bne $t6,$zero,limpaloop
+	jr $ra
 
 erro_dir:
 	addi $sp,$sp,4
@@ -256,7 +259,7 @@ cima:
 	la $t1,mov_ant
 	sw $t2,0($t1)
 	li $a0,0x00
-	jal pintapac
+	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
 	addi $a1,$a1,-3840
@@ -301,7 +304,7 @@ baixo:
 	la $t1,mov_ant
 	sw $t2,0($t1)
 	li $a0,0x00
-	jal pintapac
+	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
 	addi $a1,$a1,3840
@@ -346,7 +349,7 @@ esquerda:
 	la $t1,mov_ant
 	sw $t2,0($t1)
 	li $a0,0x00
-	jal pintapac
+	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
 	addi $a1,$a1,-12
@@ -390,7 +393,7 @@ direita:
 	la $t1,mov_ant
 	sw $t2,0($t1)
 	li $a0,0x00
-	jal pintapac
+	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
 	addi $a1,$a1,12
@@ -751,4 +754,9 @@ dir:
 	beq $t2,115,baixo
 	beq $t2,100,direita
 	beq $t2,97,esquerda
-	j loop
+	
+	la $t0,mov_ant
+	lw $t0,0($t0)
+	beq $t0,$t2,loop
+	addi $t2,$t0,0
+	j dir
