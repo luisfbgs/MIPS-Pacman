@@ -21,6 +21,7 @@
  velocidade: .word 90
  aberta: .word 1
  espelho: .word 1
+ mov_ant: .word 0
  cor: 0xff
 
  
@@ -235,6 +236,14 @@ endpreenche:
 	addi $sp,$sp,4
 	jr $ra
 
+erro_dir:
+	addi $sp,$sp,4
+	la $t0,mov_ant
+	lw $t0,0($t0)
+	beq $t0,$t2,loop
+	addi $t2,$t0,0
+	j dir
+
 cima:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
@@ -243,7 +252,9 @@ cima:
 	addi $t1,$a1,-320
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
-	beq $t1,0xC0,saicima
+	beq $t1,0xC0,erro_dir
+	la $t1,mov_ant
+	sw $t2,0($t1)
 	li $a0,0x00
 	jal pintapac
 	lw $a1,0($t0)
@@ -286,7 +297,9 @@ baixo:
 	addi $t1,$a1,3840
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
-	beq $t1,0xC0,saibaixo
+	beq $t1,0xC0,erro_dir
+	la $t1,mov_ant
+	sw $t2,0($t1)
 	li $a0,0x00
 	jal pintapac
 	lw $a1,0($t0)
@@ -329,7 +342,9 @@ esquerda:
 	addi $t1,$a1,-1
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
-	beq $t1,0xC0,saiesquerda
+	beq $t1,0xC0,erro_dir
+	la $t1,mov_ant
+	sw $t2,0($t1)
 	li $a0,0x00
 	jal pintapac
 	lw $a1,0($t0)
@@ -371,7 +386,9 @@ direita:
 	addi $t1,$a1,12
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
-	beq $t1,0xC0,saidireita
+	beq $t1,0xC0,erro_dir
+	la $t1,mov_ant
+	sw $t2,0($t1)
 	li $a0,0x00
 	jal pintapac
 	lw $a1,0($t0)
@@ -729,6 +746,7 @@ loop:
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
+dir:
 	beq $t2,119,cima
 	beq $t2,115,baixo
 	beq $t2,100,direita
