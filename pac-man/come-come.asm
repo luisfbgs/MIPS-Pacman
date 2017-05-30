@@ -59,7 +59,8 @@ pintapac:
 	add $s3,$zero,$a1 # y
 	add $s4,$zero,$a0 # x
 	li $s5,320
-	mul $a3,$a3,$a3 # raio = raio ao quadrado
+	mult $a3,$a3 # raio = raio ao quadrado
+	mflo $a3
 circloop:
 	blt $s1,$s0,endcirculo
 		# colocar pontos simetricamente nos oito octantes do circulo
@@ -97,13 +98,16 @@ circloop:
 		
 		addi $s0,$s0,1 # incrementa o y
 		
-		mul $t0,$s0,$s0
-		mul $t1,$s1,$s1
+		mult $s0,$s0
+		mflo $t0
+		mult $s1,$s1
+		mflo $t1
 		add $t1,$t0,$t1
 		sub $t2,$t1,$a3 # salva em $t2 o valor y^2 + x^2 - r^2
 		
 		addi $t1,$s1,-1
-		mul $t1,$t1,$t1
+		mult $t1,$t1
+		mflo $t1
 		add $t1,$t0,$t1
 		sub $t3,$t1,$a3 # salva em $t3 o valor y^2 + (x-1)^2 - r^2
 		
@@ -130,25 +134,25 @@ endcirculo:
 	addi $sp,$sp,40
 	jr $ra
 
-bocac:
-	#a0 = endereco, $a2 = cor
+boca: 
 	addi $sp,$sp,-8
 	sw $ra,0($sp)
 	sw $t0,4($sp)
 	
+	add $a2,$zero,$zero
 	la $t0,320
 	subi $a1,$a1,4278190080
 	div $a1,$t0
 	mfhi $a0
 	mflo $a1
-	addi $a0,$a0,6
-	addi $a1,$a1,5
+	add $a0,$a0,$s0
+	add $a1,$a1,$s1
 	
 	la $s1,boca_coord
 	sw $a0,0($s1)
 	sw $a1,4,($s1)
-	addi $a0,$a0,-6
-	addi $a1,$a1,-4
+	add $a0,$a0,$s2
+	add $a1,$a1,$s3
 	sw $a0,8($s1)
 	sw $a1,12,($s1)
 	move $a0,$s1
@@ -159,7 +163,8 @@ bocac:
 	la $s1,boca_coord
 	sw $a0,0($s1)
 	sw $a1,4,($s1)
-	addi $a0,$a0,11
+	add $a0,$a0,$s4
+	add $a1,$a1,$s5
 	sw $a0,8($s1)
 	sw $a1,12,($s1)
 	move $a0,$s1
@@ -170,8 +175,8 @@ bocac:
 	la $s1,boca_coord
 	sw $a0,0($s1)
 	sw $a1,4,($s1)
-	addi $a0,$a0,-6
-	addi $a1,$a1,4
+	add $a0,$a0,$s6
+	add $a1,$a1,$s7
 	sw $a0,8($s1)
 	sw $a1,12,($s1)
 	move $a0,$s1
@@ -179,7 +184,8 @@ bocac:
 	
 	lw $a0,8($s1)
 	lw $a1,12($s1)
-	addi $a1,$a1,-2
+	add $a0,$a0,$v0
+	add $a1,$a1,$v1
 	jal preenche_pac
 	
 	la $t0,aberta
@@ -189,187 +195,15 @@ bocac:
 	addi $sp,$sp,8
 	jr $ra
 	
-	
-bocab: 
-	addi $sp,$sp,-8
-	sw $ra,0($sp)
-	sw $t0,4($sp)
-	
-	la $t0,320
-	subi $a1,$a1,4278190080
-	div $a1,$t0
-	mfhi $a0
-	mflo $a1
-	addi $a0,$a0,6
-	addi $a1,$a1,7
-	
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,-6
-	addi $a1,$a1,4
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)	
-
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,11
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-				
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,-6
-	addi $a1,$a1,-4
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-	addi $a1,$a1,2
-	jal preenche_pac
-	
-	la $t0,aberta
-	sw $zero,0($t0)
-	lw $ra,0($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp,8
-	jr $ra
-
-bocad: 
-	addi $sp,$sp,-8
-	sw $ra,0($sp)
-	sw $t0,4($sp)
-	
-	la $t0,320
-	subi $a1,$a1,4278190080
-	div $a1,$t0
-	mfhi $a0
-	mflo $a1
-	addi $a0,$a0,7
-	addi $a1,$a1,6
-	
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,4
-	addi $a1,$a1,-6
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)	
-
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a1,$a1,11
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-				
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,-4
-	addi $a1,$a1,-6
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-	addi $a0,$a0,2
-	jal preenche_pac
-	
-	la $t0,aberta
-	sw $zero,0($t0)
-	lw $ra,0($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp,8
-	jr $ra
-
-bocae: 
-	addi $sp,$sp,-8
-	sw $ra,0($sp)
-	sw $t0,4($sp)
-	
-	la $t0,320
-	subi $a1,$a1,4278190080
-	div $a1,$t0
-	mfhi $a0
-	mflo $a1
-	addi $a0,$a0,5
-	addi $a1,$a1,6
-	
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,-4
-	addi $a1,$a1,-6
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)	
-
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a1,$a1,11
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-				
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	addi $a0,$a0,4
-	addi $a1,$a1,-6
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-	addi $a0,$a0,-2
-	jal preenche_pac
-	
-	la $t0,aberta
-	sw $zero,0($t0)
-	lw $ra,0($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp,8
-	jr $ra
 preenche_pac:
  	# $a0 = x, $a1 = y, $a2 = cor
  	addi $sp,$sp,-4
 	
 	li $t0,0xff000000
 	add $t0,$t0,$a0
-	mul $a1,$a1,320
+	addi $at,$zero,320
+	mult $a1,$at
+	mflo $a1
 	add $t0,$t0,$a1
 	
 	move $t1,$sp
@@ -422,8 +256,19 @@ cima:
 	la $t0,aberta
 	lw $t1,0($t0)
 	beq $t1,$zero,saicima2
-	li $a2,0x00
-	jal bocac
+	
+	addi $s0,$zero,6
+	addi $s1,$zero,5
+	addi $s2,$zero,-6
+	addi $s3,$zero,-4
+	addi $s4,$zero,11
+	addi $s5,$zero,0
+	addi $s6,$zero,-6
+	addi $s7,$zero,4
+	addi $v0,$zero,0
+	addi $v1,$zero,-2
+	
+	jal boca
 	j saicima
 saicima2:
 	li $t1,1
@@ -454,8 +299,19 @@ baixo:
 	la $t0,aberta
 	lw $t1,0($t0)
 	beq $t1,$zero,saibaixo2
-	li $a2,0x00
-	jal bocab
+	
+	addi $s0,$zero,6
+	addi $s1,$zero,7
+	addi $s2,$zero,-6
+	addi $s3,$zero,4
+	addi $s4,$zero,11
+	addi $s5,$zero,0
+	addi $s6,$zero,-6
+	addi $s7,$zero,-4
+	addi $v0,$zero,0
+	addi $v1,$zero,2
+	
+	jal boca
 	j saibaixo
 saibaixo2:
 	li $t1,1
@@ -486,8 +342,19 @@ esquerda:
 	la $t0,aberta
 	lw $t1,0($t0)
 	beq $t1,$zero,saiesquerda2
-	li $a2,0x00
-	jal bocae
+	
+	addi $s0,$zero,5
+	addi $s1,$zero,6
+	addi $s2,$zero,-4
+	addi $s3,$zero,-6
+	addi $s4,$zero,0
+	addi $s5,$zero,11
+	addi $s6,$zero,4
+	addi $s7,$zero,-6
+	addi $v0,$zero,-2
+	addi $v1,$zero,0
+	
+	jal boca
 	j saiesquerda
 saiesquerda2:
 	li $t1,1
@@ -517,8 +384,19 @@ direita:
 	la $t0,aberta
 	lw $t1,0($t0)
 	beq $t1,$zero,saidireita2
-	li $a2,0x00
-	jal bocad
+
+	addi $s0,$zero,7
+	addi $s1,$zero,6
+	addi $s2,$zero,4
+	addi $s3,$zero,-6
+	addi $s4,$zero,0
+	addi $s5,$zero,11
+	addi $s6,$zero,-4
+	addi $s7,$zero,-6
+	addi $v0,$zero,2
+	addi $v1,$zero,0
+
+	jal boca
 	j saidireita
 saidireita2:
 	li $t1,1
@@ -537,7 +415,9 @@ funcao_ponto:
 	sw $t9, 8($sp)
 	#Uso do t0(variaveis) e t1(endere?o)
 	move $t0,$a1
-	mul $t0,$t0,320 # y *= 320
+	addi $at,$zero,320
+	mult $t0,$at # y *= 320
+	mflo $t0
 	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$t0
 	move $t9,$t1
@@ -576,7 +456,9 @@ funcao_reta:
 
 	if_fr_1:
 		bgt $t0,$zero,else_fr_1
- 		mul $t0,$t0,-1 #Se s0 negativo troque o sinal
+		addi $at,$zero,-1
+ 		mult $t0,$at #Se s0 negativo troque o sinal
+ 		mflo $t0
  		li $t2,-1 #sx = negativo
  		j endif_fr_1
 	else_fr_1:
@@ -586,7 +468,9 @@ funcao_reta:
 	sub $t1,$t9,$t7 # dy = y1 - y0
 	if_fr_2:
 		bgt $t1,$zero,else_fr_2 
- 		mul $t1,$t1,-1 #Se s1 negativo troque o sinal
+		addi $at,$zero,-1
+ 		mult $t1,$at #Se s1 negativo troque o sinal
+ 		mflo $t1
  		li $t3,-1 #dy negativo
  		j endif_fr_2
 	else_fr_2: 	
@@ -595,7 +479,9 @@ funcao_reta:
 
 	if_fr_3:
 		bgt $t0,$t1,else_fr_3 #se dx>dy
-		mul $t4,$t1,-1 #err = (-dy)
+		addi $at,$zero,-1
+		mult $t1,$at #err = (-dy)
+		mflo $t4
 		j endif_fr_3
  	else_fr_3: 
  		move $t4,$t0 #err = dx
@@ -616,12 +502,16 @@ funcao_reta:
 		addu $t5, $t4, $zero
 		
 		if_fr_4:
-			mul $t0, $t0, -1
+			addi $at,$zero,-1
+			mult $t0, $at
+			mflo $t0
 			ble $t5, $t0, endif_fr_4
 			sub $t4, $t4, $t1
 			add $t6, $t6, $t2	
 		endif_fr_4:
-		mul $t0, $t0, -1
+		addi $at,$zero,-1
+		mult $t0, $at
+		mflo $t0
 		if_fr_5:
 			bge $t5, $t1, endif_fr_5
 			add $t4, $t4, $t0
@@ -822,7 +712,6 @@ mapa:
 	addi $a0,$a0,8
 	li $s1,5
 	jal loop_food
-
 	
 	la $t0,espelho
 	sw $zero,0($t0)
