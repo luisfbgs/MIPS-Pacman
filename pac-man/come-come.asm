@@ -29,9 +29,21 @@
 
 j mapa
 
+#Preenche tela de preto ------------------------------------------------------------------------------------
+ preenchetela:	
+	# pinta a tela de preto
+ 	li $t0,0xff000000
+ 	li $t1,0xff012c00
+ 	li $a2,0x00000000
+ tela:
+ 	beq $t0,$t1,saitela
+ 	sw $a2,0($t0)
+ 	addi $t0,$t0,4
+ 	j tela	
+saitela: 
+ 	jr $ra 	
 
 #Funcao ponto ---------------------------------------------------
-
 funcao_ponto:
 	# $a0 = x, $a1 = y
 	
@@ -63,6 +75,273 @@ saiponto:
 	lw $t9, 8($sp)
 	addi $sp, $sp, 12
 	jr $ra
+
+#Funcao reta ------------------------------------------------------------------------------------
+funcao_reta:
+	#a0 = Endereco das coordenadas
+	#a2 = cor
+	#t6 = x0 t7=y0 t8=x1 t9=y1
+	#t0 = dx, t1 = dy, t2 = sx, t3 = sy, t4=err, t5 = e2
+	
+	lw $t6, 0($a0)
+	lw $t7, 4($a0)
+	lw $t8, 8($a0)
+	lw $t9, 12($a0)
+	
+	addi $sp, $sp, -8
+	sw $a0, 4($sp)
+	sw $ra, 0($sp)
+	sub $t0,$t8,$t6
+
+	if_fr_1:
+		bgt $t0,$zero,else_fr_1
+		addi $at,$zero,-1
+ 		mult $t0,$at #Se s0 negativo troque o sinal
+ 		mflo $t0
+ 		li $t2,-1 #sx = negativo
+ 		j endif_fr_1
+	else_fr_1:
+	 	li $t2,1 #se s0 pos, dx = 1
+	endif_fr_1:
+	
+	sub $t1,$t9,$t7 # dy = y1 - y0
+	if_fr_2:
+		bgt $t1,$zero,else_fr_2 
+		addi $at,$zero,-1
+ 		mult $t1,$at #Se s1 negativo troque o sinal
+ 		mflo $t1
+ 		li $t3,-1 #dy negativo
+ 		j endif_fr_2
+	else_fr_2: 	
+		li $t3,1 #se s3 positivo, dy = 1
+	endif_fr_2:
+
+	if_fr_3:
+		bgt $t0,$t1,else_fr_3 #se dx>dy
+		addi $at,$zero,-1
+		mult $t1,$at #err = (-dy)
+		mflo $t4
+		j endif_fr_3
+ 	else_fr_3: 
+ 		move $t4,$t0 #err = dx
+ 	endif_fr_3:
+
+	div $t4,$t4,2 # err = err/2 
+
+	while_fr_1:
+		addi $a0, $t6, 0
+		addi $a1, $t7, 0
+		jal funcao_ponto
+		
+		bne $t6, $t8, neq_fr_1 # if (x0 == x1 && y0 == y1) break;
+		bne $t7, $t9, neq_fr_1 # if (x0 == x1 && y0 == y1) break;
+		j ew_fr_1
+		
+		neq_fr_1:
+		addu $t5, $t4, $zero
+		
+		if_fr_4:
+			addi $at,$zero,-1
+			mult $t0, $at
+			mflo $t0
+			ble $t5, $t0, endif_fr_4
+			sub $t4, $t4, $t1
+			add $t6, $t6, $t2	
+		endif_fr_4:
+		addi $at,$zero,-1
+		mult $t0, $at
+		mflo $t0
+		if_fr_5:
+			bge $t5, $t1, endif_fr_5
+			add $t4, $t4, $t0
+			add $t7, $t7, $t3
+		endif_fr_5:
+		j while_fr_1
+	ew_fr_1:
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	addi $sp, $sp, 8
+	jr $ra
+
+#Loop mapa ------------------------------------------------------------------------------------
+loop_mapa:
+	li $s0,0
+	addi $sp,$sp,-40 
+	sw $ra,0($sp)
+	for_mapa1: 
+		beq $s0,$s1,end_for_mapa1
+		jal funcao_reta
+		addi $a0,$a0,8
+		addi $s0,$s0,1
+		j for_mapa1
+	end_for_mapa1:
+		lw $ra,0($sp)
+		addi $sp,$sp,4
+		jr $ra
+ 	
+#Loop food ------------------------------------------------------------------------------------
+loop_food:
+	addi $sp,$sp,-12
+	sw $ra,0($sp)
+	sw $a0,4($sp)
+	sw $a1,8($sp)	
+		
+	lw $a1,4($a0)
+	lw $a0,0($a0)
+	li $s0,0
+	
+	loop_food_for: beq $s0,$s1,end_loop_food_for
+		jal funcao_ponto
+		addi $a0,$a0,1
+		jal funcao_ponto
+		addi $a1,$a1,1
+		jal funcao_ponto
+		addi $a0,$a0,-1
+		jal funcao_ponto
+		
+		beq $s2,$zero,vertical
+		addi $a0,$a0,12
+		addi $a1,$a1,-1
+		j end
+		vertical:addi $a1,$a1,11
+		end:
+		addi $s0,$s0,1
+	j loop_food_for
+	end_loop_food_for:
+	
+	lw $ra,0($sp)
+	lw $a0,4($sp)
+	lw $a1,8($sp)
+	addi $sp,$sp,12
+	
+	jr $ra
+
+#Funcao mapa ---------------------------------------------------------------------------------------	
+mapa:
+	addi $sp,$sp,-8
+	sw $s0,0($sp)
+	sw $s1,4($sp)	
+
+	jal preenchetela
+	
+	la $a0,coordinates1
+	li $a2,0xC0
+	li $s1,7
+	jal loop_mapa	
+
+	la $a0,coordinates2
+	li $s1,9
+	jal loop_mapa
+			
+	la $a0,coordinates3
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates4
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates5	
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates6
+	li $s1,8
+	jal loop_mapa
+	
+	la $a0,coordinates7
+	li $s1,5
+	jal loop_mapa
+	
+	la $a0,coordinates8
+	li $s1,3
+	jal loop_mapa
+	
+	la $a0,coordinates9
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates10
+	li $s1,6
+	jal loop_mapa
+	
+	la $a0,coordinates11
+	li $s1,5
+	jal loop_mapa
+	
+	la $a0,coordinates12
+	li $s1,4
+	jal loop_mapa
+	
+	la $a0,coordinates13
+	li $s1,4
+	jal loop_mapa
+	
+#Funcao comida ---------------------------------------------------------------------------------------	
+	#COMIDA DE GORILA
+	
+	#vertical aqui
+	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
+	la $a0,food_coordinate1
+	la $a2,0xFFFFFFFF
+	li $s1,5
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,13
+	jal loop_food
+
+	addi $a0,$a0,8
+	li $s1,2
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,3
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,6
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,4
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,2
+	jal loop_food
+	
+	#horizontal aqui
+	la $a0,food_coordinate2
+	li $s2,1
+	
+	li $s1,12
+	jal loop_food	
+	
+	addi $a0,$a0,8
+	li $s1,14
+	jal loop_food	
+	
+	addi $a0,$a0,8
+	li $s1,4
+	jal loop_food	
+	
+	addi $a0,$a0,8
+	li $s1,4
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,11
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,13
+	jal loop_food
+	
+	addi $a0,$a0,8
+	li $s1,5
+	jal loop_food
+	j loop_jogo
 
 #Pinta Pac -----------------------------------------------------------	
 pintapac:
@@ -267,6 +546,7 @@ endpreenche:
 limpa:
 	li $t6,12
 	addi $t3,$a1,0
+	li $a0,0x00000000
 limpaloop:
 	addi $t6,$t6,-1
 	addi $t7,$t3,12
@@ -302,7 +582,6 @@ cima:
 	beq $t1,0xC0,erro_dir
 	la $t1,mov_ant
 	sw $t2,0($t1)
-	li $a0,0x00
 	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
@@ -348,7 +627,6 @@ baixo:
 	beq $t1,0xC0,erro_dir
 	la $t1,mov_ant
 	sw $t2,0($t1)
-	li $a0,0x00
 	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
@@ -394,7 +672,6 @@ esquerda:
 	beq $t1,0xC0,erro_dir
 	la $t1,mov_ant
 	sw $t2,0($t1)
-	li $a0,0x00
 	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
@@ -440,7 +717,6 @@ direita:
 	beq $t1,0xC0,erro_dir
 	la $t1,mov_ant
 	sw $t2,0($t1)
-	li $a0,0x00
 	jal limpa
 	lw $a1,0($t0)
 	li $a0,0x77
@@ -474,288 +750,8 @@ saidireita:
 	addi $sp,$sp,4
 	jr $ra
 	
-
-#Funcao reta ------------------------------------------------------------------------------------
-funcao_reta:
-	#a0 = Endereco das coordenadas
-	#a2 = cor
-	#t6 = x0 t7=y0 t8=x1 t9=y1
-	#t0 = dx, t1 = dy, t2 = sx, t3 = sy, t4=err, t5 = e2
-	
-	lw $t6, 0($a0)
-	lw $t7, 4($a0)
-	lw $t8, 8($a0)
-	lw $t9, 12($a0)
-	
-	addi $sp, $sp, -8
-	sw $a0, 4($sp)
-	sw $ra, 0($sp)
-	sub $t0,$t8,$t6
-
-	if_fr_1:
-		bgt $t0,$zero,else_fr_1
-		addi $at,$zero,-1
- 		mult $t0,$at #Se s0 negativo troque o sinal
- 		mflo $t0
- 		li $t2,-1 #sx = negativo
- 		j endif_fr_1
-	else_fr_1:
-	 	li $t2,1 #se s0 pos, dx = 1
-	endif_fr_1:
-	
-	sub $t1,$t9,$t7 # dy = y1 - y0
-	if_fr_2:
-		bgt $t1,$zero,else_fr_2 
-		addi $at,$zero,-1
- 		mult $t1,$at #Se s1 negativo troque o sinal
- 		mflo $t1
- 		li $t3,-1 #dy negativo
- 		j endif_fr_2
-	else_fr_2: 	
-		li $t3,1 #se s3 positivo, dy = 1
-	endif_fr_2:
-
-	if_fr_3:
-		bgt $t0,$t1,else_fr_3 #se dx>dy
-		addi $at,$zero,-1
-		mult $t1,$at #err = (-dy)
-		mflo $t4
-		j endif_fr_3
- 	else_fr_3: 
- 		move $t4,$t0 #err = dx
- 	endif_fr_3:
-
-	div $t4,$t4,2 # err = err/2 
-
-	while_fr_1:
-		addi $a0, $t6, 0
-		addi $a1, $t7, 0
-		jal funcao_ponto
-		
-		bne $t6, $t8, neq_fr_1 # if (x0 == x1 && y0 == y1) break;
-		bne $t7, $t9, neq_fr_1 # if (x0 == x1 && y0 == y1) break;
-		j ew_fr_1
-		
-		neq_fr_1:
-		addu $t5, $t4, $zero
-		
-		if_fr_4:
-			addi $at,$zero,-1
-			mult $t0, $at
-			mflo $t0
-			ble $t5, $t0, endif_fr_4
-			sub $t4, $t4, $t1
-			add $t6, $t6, $t2	
-		endif_fr_4:
-		addi $at,$zero,-1
-		mult $t0, $at
-		mflo $t0
-		if_fr_5:
-			bge $t5, $t1, endif_fr_5
-			add $t4, $t4, $t0
-			add $t7, $t7, $t3
-		endif_fr_5:
-		j while_fr_1
-	ew_fr_1:
-	lw $ra, 0($sp)
-	lw $a0, 4($sp)
-	addi $sp, $sp, 8
-	jr $ra
-
-#Loop mapa ------------------------------------------------------------------------------------
-loop_mapa:
-	li $s0,0
-	addi $sp,$sp,-4
-	sw $ra,0($sp)
-	for_mapa1: 
-		beq $s0,$s1,end_for_mapa1
-		jal funcao_reta
-		addi $a0,$a0,8
-		addi $s0,$s0,1
-		j for_mapa1
-	end_for_mapa1:
-		lw $ra,0($sp)
-		addi $sp,$sp,4
-		jr $ra
-		
-#Preenche tela de preto ------------------------------------------------------------------------------------
- preenchetela:	
-	# pinta a tela de preto
- 	li $t0,0xff000000
- 	li $t1,0xff012c00
- 	li $a2,0x00000000
- tela:
- 	beq $t0,$t1,saitela
- 	sw $a2,0($t0)
- 	addi $t0,$t0,4
- 	j tela	
-saitela: 
- 	jr $ra 	
- 	
-#Loop food ------------------------------------------------------------------------------------
-loop_food:
-	addi $sp,$sp,-12
-	sw $ra,0($sp)
-	sw $a0,4($sp)
-	sw $a1,8($sp)	
-		
-	lw $a1,4($a0)
-	lw $a0,0($a0)
-	li $s0,0
-	
-	loop_food_for: beq $s0,$s1,end_loop_food_for
-		jal funcao_ponto
-		addi $a0,$a0,1
-		jal funcao_ponto
-		addi $a1,$a1,1
-		jal funcao_ponto
-		addi $a0,$a0,-1
-		jal funcao_ponto
-		
-		beq $s2,$zero,vertical
-		addi $a0,$a0,12
-		addi $a1,$a1,-1
-		j end
-		vertical:addi $a1,$a1,11
-		end:
-		addi $s0,$s0,1
-	j loop_food_for
-	end_loop_food_for:
-	
-	lw $ra,0($sp)
-	lw $a0,4($sp)
-	lw $a1,8($sp)
-	addi $sp,$sp,12
-	
-	jr $ra
-
-#Funcao mapa ---------------------------------------------------------------------------------------	
-mapa:
-	addi $sp,$sp,-8
-	sw $s0,0($sp)
-	sw $s1,4($sp)	
-
-	jal preenchetela
-	
-	la $a0,coordinates1
-	li $a2,0xC0
-	li $s1,7
-	jal loop_mapa	
-
-	la $a0,coordinates2
-	li $s1,9
-	jal loop_mapa
-			
-	la $a0,coordinates3
-	li $s1,4
-	jal loop_mapa
-	
-	la $a0,coordinates4
-	li $s1,4
-	jal loop_mapa
-	
-	la $a0,coordinates5	
-	li $s1,4
-	jal loop_mapa
-	
-	la $a0,coordinates6
-	li $s1,8
-	jal loop_mapa
-	
-	la $a0,coordinates7
-	li $s1,5
-	jal loop_mapa
-	
-	la $a0,coordinates8
-	li $s1,3
-	jal loop_mapa
-	
-	la $a0,coordinates9
-	li $s1,4
-	jal loop_mapa
-	
-	la $a0,coordinates10
-	li $s1,6
-	jal loop_mapa
-	
-	la $a0,coordinates11
-	li $s1,5
-	jal loop_mapa
-	
-	la $a0,coordinates12
-	li $s1,4
-	jal loop_mapa
-	
-	la $a0,coordinates13
-	li $s1,4
-	jal loop_mapa
-	
-#Funcao comida ---------------------------------------------------------------------------------------	
-	#COMIDA DE GORILA
-	
-	#vertical aqui
-	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
-	la $a0,food_coordinate1
-	la $a2,0xFFFFFFFF
-	li $s1,5
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,13
-	jal loop_food
-
-	addi $a0,$a0,8
-	li $s1,2
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,3
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,6
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,4
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,2
-	jal loop_food
-	
-	#horizontal aqui
-	la $a0,food_coordinate2
-	li $s2,1
-	
-	li $s1,12
-	jal loop_food	
-	
-	addi $a0,$a0,8
-	li $s1,14
-	jal loop_food	
-	
-	addi $a0,$a0,8
-	li $s1,4
-	jal loop_food	
-	
-	addi $a0,$a0,8
-	li $s1,4
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,11
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,13
-	jal loop_food
-	
-	addi $a0,$a0,8
-	li $s1,5
-	jal loop_food
-
 #Loop de jogo -------------------------------------------------------------------------------------------------
+loop_jogo:
 	la $t0,espelho
 	sw $zero,0($t0)
 	la $t0,baseadd
