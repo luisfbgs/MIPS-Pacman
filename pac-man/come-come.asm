@@ -29,6 +29,42 @@
 
 j mapa
 
+
+#Funcao ponto ---------------------------------------------------
+
+funcao_ponto:
+	# $a0 = x, $a1 = y
+	
+	addi $sp, $sp, -12
+	sw $t0, 0($sp)
+	sw $t1, 4($sp)
+	sw $t9, 8($sp)
+	#Uso do t0(variaveis) e t1(endere?o)
+	move $t0,$a1
+	addi $at,$zero,320
+	mult $t0,$at # y *= 320
+	mflo $t0
+	lw $t1,baseadd #retorno recebe end base
+	add $t1,$t1,$t0
+	move $t9,$t1
+	move $t0,$a0 #reg reusado
+	add $t1,$t1,$t0
+	sb $a2,0($t1)
+	move $t1,$t9
+	la $t9,espelho
+	lw $t9,0($t9)
+	beqz $t9,saiponto
+	addi $t1,$t1,319
+	sub $t1,$t1,$t0
+	sb $a2,0($t1)
+saiponto:	
+	lw $t0, 0($sp)
+	lw $t1, 4($sp)
+	lw $t9, 8($sp)
+	addi $sp, $sp, 12
+	jr $ra
+
+#Pinta Pac -----------------------------------------------------------	
 pintapac:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utilizados
@@ -123,6 +159,8 @@ endcirculo:
 	addi $sp,$sp,8
 	jr $ra
 
+#Pinta boca -----------------------------------------------------------------------------
+
 boca: 
 	addi $sp,$sp,-8
 	sw $ra,0($sp)
@@ -183,7 +221,8 @@ boca:
 	lw $t0,4($sp)
 	addi $sp,$sp,8
 	jr $ra
-	
+
+#Preenche Pac -------------------------------------------------------------------------
 preenche_pac:
  	# $a0 = x, $a1 = y, $a2 = cor
  	addi $sp,$sp,-4
@@ -223,6 +262,8 @@ bfs:
 endpreenche:
 	addi $sp,$sp,4
 	jr $ra
+
+#Limpa pac -------------------------------------------------------------------------------------
 limpa:
 	li $t6,12
 	addi $t3,$a1,0
@@ -239,6 +280,8 @@ sailimpaloop:
 	bne $t6,$zero,limpaloop
 	jr $ra
 
+
+#Erro movimentacao pac ----------------------------------------------------------------------------
 erro_dir:
 	addi $sp,$sp,4
 	la $t0,mov_ant
@@ -247,6 +290,7 @@ erro_dir:
 	addi $t2,$t0,0
 	j dir
 
+#Pac pra cima ------------------------------------------------------------------------------------
 cima:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
@@ -292,6 +336,7 @@ saicima:
 	addi $sp,$sp,4
 	jr $ra
 
+#Pac pra baixo ------------------------------------------------------------------------------------
 baixo:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
@@ -337,6 +382,7 @@ saibaixo:
 	addi $sp,$sp,4
 	jr $ra
 	
+#Pac pra esquerda ------------------------------------------------------------------------------------
 esquerda:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
@@ -381,6 +427,8 @@ saiesquerda:
 	lw $ra,0($sp)	
 	addi $sp,$sp,4
 	jr $ra
+
+#Pac pra direita ------------------------------------------------------------------------------------
 direita:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
@@ -426,38 +474,8 @@ saidireita:
 	addi $sp,$sp,4
 	jr $ra
 	
-funcao_ponto:
-	# $a0 = x, $a1 = y
-	
-	addi $sp, $sp, -12
-	sw $t0, 0($sp)
-	sw $t1, 4($sp)
-	sw $t9, 8($sp)
-	#Uso do t0(variaveis) e t1(endere?o)
-	move $t0,$a1
-	addi $at,$zero,320
-	mult $t0,$at # y *= 320
-	mflo $t0
-	lw $t1,baseadd #retorno recebe end base
-	add $t1,$t1,$t0
-	move $t9,$t1
-	move $t0,$a0 #reg reusado
-	add $t1,$t1,$t0
-	sb $a2,0($t1)
-	move $t1,$t9
-	la $t9,espelho
-	lw $t9,0($t9)
-	beqz $t9,saiponto
-	addi $t1,$t1,319
-	sub $t1,$t1,$t0
-	sb $a2,0($t1)
-saiponto:	
-	lw $t0, 0($sp)
-	lw $t1, 4($sp)
-	lw $t9, 8($sp)
-	addi $sp, $sp, 12
-	jr $ra
 
+#Funcao reta ------------------------------------------------------------------------------------
 funcao_reta:
 	#a0 = Endereco das coordenadas
 	#a2 = cor
@@ -543,8 +561,8 @@ funcao_reta:
 	lw $a0, 4($sp)
 	addi $sp, $sp, 8
 	jr $ra
-endreta:
 
+#Loop mapa ------------------------------------------------------------------------------------
 loop_mapa:
 	li $s0,0
 	addi $sp,$sp,-4
@@ -560,6 +578,7 @@ loop_mapa:
 		addi $sp,$sp,4
 		jr $ra
 		
+#Preenche tela de preto ------------------------------------------------------------------------------------
  preenchetela:	
 	# pinta a tela de preto
  	li $t0,0xff000000
@@ -573,6 +592,7 @@ loop_mapa:
 saitela: 
  	jr $ra 	
  	
+#Loop food ------------------------------------------------------------------------------------
 loop_food:
 	addi $sp,$sp,-12
 	sw $ra,0($sp)
@@ -608,7 +628,8 @@ loop_food:
 	addi $sp,$sp,12
 	
 	jr $ra
-	
+
+#Funcao mapa ---------------------------------------------------------------------------------------	
 mapa:
 	addi $sp,$sp,-8
 	sw $s0,0($sp)
@@ -669,6 +690,7 @@ mapa:
 	li $s1,4
 	jal loop_mapa
 	
+#Funcao comida ---------------------------------------------------------------------------------------	
 	#COMIDA DE GORILA
 	
 	#vertical aqui
@@ -732,7 +754,8 @@ mapa:
 	addi $a0,$a0,8
 	li $s1,5
 	jal loop_food
-	
+
+#Loop de jogo -------------------------------------------------------------------------------------------------
 	la $t0,espelho
 	sw $zero,0($t0)
 	la $t0,baseadd
