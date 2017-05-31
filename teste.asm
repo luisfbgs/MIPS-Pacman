@@ -11,17 +11,36 @@
 	cpadds: .float 5.5
 	cpsubs: .float 2.5
 .text
+li $s7,0
+preenchetela:	
+	# pinta a tela de preto
+ 	li $t0,0xff000000
+ 	li $t1,0xff012c00
+ 	li $a2,0x70707070
+ tela:
+ 	beq $t0,$t1,saitela
+ 	sw $a2,0($t0)
+ 	addi $t0,$t0,4
+ 	j tela	
+saitela: 
+
 j main
 error: 
 	addi $sp,$sp,-4
 	sw $a0,0($sp)
-	
+
+	addi $v0,$s7,4
 	la $a0,out1
-	li $v0,4
-	syscall #print string
+	li $a1,0
+	li $a2,0
+	li $a3,0xFF00
+	syscall
 	
 	lw $a0,0($sp)
 	addi $sp,$sp,4
+	li $a1,35
+	li $a2,0
+	li $a3,0xFF00
 	li $v0,1
 	syscall #print int
 	
@@ -34,7 +53,7 @@ error:
 soma: 	
 	lw $t0,in1
 	lw $t1,in2
-	li $t2,3
+	li $t2,4
 	li $a0,1
 	
 	add $t0,$t0,$t1
