@@ -28,7 +28,8 @@ acertor:
 	sw $a0,0($sp)
 	sw $ra,4($sp)
 
-	addi $v0,$s7,104
+	#addi $v0,$s7,104
+	addi $v0,$s7,4
 	la $a0,out2
 	lw $a1,estate
 	li $a3,0xFF00
@@ -36,9 +37,9 @@ acertor:
 	
 	lw $a0,0($sp)
 	
-	#li $a2,0
 	li $a3,0xFF00
-	li $v0,101
+	#li $v0,101
+	li $v0,1
 	syscall #print int
 	
 	addi $a1,$a1,3
@@ -47,13 +48,16 @@ acertor:
 	lw $ra,4($sp)
 	addi $sp,$sp,8
 	
+	
+	li $v1,1
 	jr $ra
 
 error: 
 	addi $sp,$sp,-4
 	sw $a0,0($sp)
 
-	addi $v0,$s7,104
+	#addi $v0,$s7,104
+	addi $v0,$s7,4
 	la $a0,out1
 	lw $a1,estate
 	li $a3,0xFF00
@@ -61,15 +65,17 @@ error:
 	
 	lw $a0,0($sp)
 	addi $sp,$sp,4
-	#addi $a1,$a1,35
 	li $a2,0
 	li $a3,0xFF00
-	li $v0,101
+	#li $v0,101
+	li $v0,1
 	syscall #print int
 	
 	addi $a1,$a1,3
 	sw $a1,estate
 	
+	
+	li $v1,-1
 	jr $ra
 	
 soma: 	
