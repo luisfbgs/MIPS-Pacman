@@ -1,66 +1,92 @@
 .data
-	out1: .asciiz "Erro! "
-	out2: .asciiz "\n"
-	in1: .word 1
-	in2: .word 2
-	in3: .float 1.5
-	in4: .float 4.0
-	in5: .float 2.0
-	in6: .float -2.0
+	out1: 	.asciiz "Erro! "
+	out2: 	.asciiz "Acerto: "
+	in1: 	.word 1
+	in2: 	.word 2
+	in3: 	.float 1.5
+	in4: 	.float 4.0
+	in5: 	.float 2.0
+	in6: 	.float -2.0
 	cpmuls: .float 6.0
 	cpadds: .float 5.5
 	cpsubs: .float 2.5
+	estate: .word  0
 .text
 li $s7,0
-preenchetela:	
-	# pinta a tela de preto
- 	li $t0,0xff000000
- 	li $t1,0xff012c00
- 	li $a2,0x70707070
- tela:
- 	beq $t0,$t1,saitela
- 	sw $a2,0($t0)
- 	addi $t0,$t0,4
- 	j tela	
-saitela: 
+ 
 
 j main
+
+acertor:
+	li $t7,230
+ 	blt $a1,$t7,pula
+ 		li $a1,0
+ 		sw $a1,estate
+ 	 	addi $a2,$a2,13
+ 	   
+	pula:addi $sp,$sp,-8
+	sw $a0,0($sp)
+	sw $ra,4($sp)
+
+	addi $v0,$s7,104
+	la $a0,out2
+	lw $a1,estate
+	li $a3,0xFF00
+	syscall
+	
+	lw $a0,0($sp)
+	
+	#li $a2,0
+	li $a3,0xFF00
+	li $v0,101
+	syscall #print int
+	
+	addi $a1,$a1,3
+	sw $a1,estate
+	
+	lw $ra,4($sp)
+	addi $sp,$sp,8
+	
+	jr $ra
+
 error: 
 	addi $sp,$sp,-4
 	sw $a0,0($sp)
 
-	addi $v0,$s7,4
+	addi $v0,$s7,104
 	la $a0,out1
-	li $a1,0
-	li $a2,0
+	lw $a1,estate
 	li $a3,0xFF00
 	syscall
 	
 	lw $a0,0($sp)
 	addi $sp,$sp,4
-	li $a1,35
+	#addi $a1,$a1,35
 	li $a2,0
 	li $a3,0xFF00
-	li $v0,1
+	li $v0,101
 	syscall #print int
 	
-	la $a0,out2 #\n
-	li $v0,4
-	syscall 
+	addi $a1,$a1,3
+	sw $a1,estate
 	
 	jr $ra
 	
 soma: 	
 	lw $t0,in1
 	lw $t1,in2
-	li $t2,4
+	li $t2,3
 	li $a0,1
 	
 	add $t0,$t0,$t1
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 		
 multiplicacao:
+
+
+
 	lw $t0,in1
 	lw $t1,in2
 	li $t2,2
@@ -70,6 +96,7 @@ multiplicacao:
 	mflo $t0
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 subtracao:	
@@ -81,6 +108,7 @@ subtracao:
 	
 	sub $t0,$t0,$t1
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 op_and:
@@ -92,6 +120,7 @@ op_and:
 	and $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_or:	
@@ -104,6 +133,7 @@ op_or:
 	or $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 mfhi_mflo:	
@@ -121,8 +151,9 @@ mfhi_mflo:
 	bne $t0,$t2,mfhi_mflo_chama_error
 	j try	
 	
-	mfhi_mflo_chama_error: jal error
+	mfhi_mflo_chama_error: j error
 	try:
+	jal acertor
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	
@@ -130,6 +161,7 @@ mfhi_mflo:
 	li $a0,7
 	mfhi $t0
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 op_sll:
@@ -141,6 +173,7 @@ op_sll:
 	sll $t0,$t0,2
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_srl:
@@ -151,6 +184,7 @@ op_srl:
 	srl $t0,$t0,1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_slt:
@@ -162,6 +196,7 @@ op_slt:
 	slt $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 op_sgt:
 	lw $t0,in1
@@ -172,6 +207,7 @@ op_sgt:
 	sgt $t0,$t1,$t0
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 op_sra:
@@ -182,6 +218,7 @@ op_sra:
 	sra $t0,$t0,2
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 op_srav:
@@ -193,6 +230,7 @@ op_srav:
 	srav $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_sllv:
@@ -204,6 +242,7 @@ op_sllv:
 	sllv $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_srlv:
@@ -215,6 +254,7 @@ op_srlv:
 	srlv $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra
 	
 op_xor:
@@ -226,6 +266,7 @@ op_xor:
 	xor $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_nor:
@@ -237,6 +278,7 @@ op_nor:
 	nor $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_sltu:
@@ -248,6 +290,7 @@ op_sltu:
 	sltu $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra			
 	
 op_lui:
@@ -256,9 +299,13 @@ op_lui:
 	li $a0,19	
 	
 	bne $t0,$t2,error
+	j acertor
 	jr $ra	
 	
 op_div:
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+
 	li $t0,31
 	li $t1,2
 	li $t2,15
@@ -267,13 +314,17 @@ op_div:
 	div $t0,$t1
 	mflo $t0
 	
-	bne $t0,$t2,error
+	bne $t0,$t2,error	
+	jal acertor
 	
 	mfhi $t0
 	li $t2,1
 	li $a0,21
 	bne $t0,$t2,error
 	
+	lw $ra,0($sp)
+	addi $sp,$sp,4
+	j acertor
 	jr $ra
 	
 op_mthi_mtlo:
@@ -287,16 +338,19 @@ op_mthi_mtlo:
 	mfhi $t1
 	
 	bne $t1,$t2,chamaerror
+	jal acertor
 	j try2
-	chamaerror: jal error
-	lw $ra,0($sp)	
+	chamaerror: j error
+	
+	try2:lw $ra,0($sp)	
 	addi $sp,$sp,4
 		
-	try2:li $a0,23
+	li $a0,23
 	mtlo $t0
 	mflo $t1
 	
 	bne $t1,$t2,error
+	j acertor
 	jr $ra	
 	
 op_muls: 
@@ -309,6 +363,7 @@ op_muls:
 	
 	c.eq.s $f0,$f2
 	bc1f error
+	j acertor
 	
 	jr $ra		
 	
@@ -322,6 +377,7 @@ op_adds:
 	
 	c.eq.s $f0,$f2
 	bc1f error
+	j acertor
 	
 	jr $ra			
 
@@ -335,6 +391,7 @@ op_subs:
 	
 	c.eq.s $f0,$f2
 	bc1f error
+	j acertor
 	
 	jr $ra
 
@@ -347,6 +404,7 @@ op_divs:
 	
 	c.eq.s $f0,$f1
 	bc1f error
+	j acertor
 	
 	jr $ra
 
@@ -359,6 +417,7 @@ op_sqrt:
 	
 	c.eq.s $f1,$f0
 	bc1f error
+	j acertor
 	
 	jr $ra
 
@@ -371,7 +430,7 @@ op_abs:
 	
 	c.eq.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 	
 op_neg:
@@ -383,7 +442,7 @@ op_neg:
 	
 	c.eq.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 	
 op_ceq:
@@ -393,7 +452,7 @@ op_ceq:
 
 	c.eq.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 	
 op_clt:
@@ -403,7 +462,7 @@ op_clt:
 
 	c.lt.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 
 op_cle:
@@ -413,7 +472,7 @@ op_cle:
 
 	c.le.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 	
 op_cvtsw:
@@ -424,8 +483,9 @@ op_cvtsw:
 	li $a0,34
 
 	beq $t1,$t0,sai
-	j error
+	j error 
 sai:
+	j acertor
 	jr $ra
 
 op_cvtws:
@@ -437,7 +497,7 @@ op_cvtws:
 
 	c.eq.s $f1,$f0
 	bc1f error
-	
+	j acertor
 	jr $ra
 main: 
 	#ULA			#codigo de erro
