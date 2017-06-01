@@ -544,14 +544,14 @@ endpreenche:
 limpa:
 	li $t6,12
 	addi $t3,$a1,0
-	li $a0,0x00
+	li $a0,0x0000
 limpaloop:
 	addi $t6,$t6,-1
 	addi $t7,$t3,12
 limpaloop2:    
 	beq $t3,$t7,sailimpaloop
-	sb $a0,0($t3)
-	addi $t3,$t3,1
+	sh $a0,0($t3)
+	addi $t3,$t3,2
 	j limpaloop2
 sailimpaloop:
 	addi $t3,$t3,308
