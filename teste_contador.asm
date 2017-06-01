@@ -482,7 +482,8 @@ testa_acertos:
 	li $a1,60
 	li $a2,90
 	li $a3,0xFF00
-	li $v0,104
+	#li $v0,104
+	li $v0,4
 	syscall
 	pula_testa_acertos: jr $ra
 		
