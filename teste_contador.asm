@@ -19,9 +19,10 @@ li $s6,0
 j main
 
 acertor:
-	addi $s6,$s6,1
+	li $v0,1
 	jr $ra
-error: 
+error: 	li $v0,-1
+	jr $ra
 	addi $sp,$sp,-4
 	sw $a0,0($sp)
 
@@ -490,38 +491,98 @@ testa_acertos:
 main: 
 	#ULA			#codigo de erro
 	jal soma 		#1
+	li $t0,0
+	sw $zero,0($t0)
 	jal multiplicacao 	#2
+	li $t0,0
+	sw $zero,0($t0)
 	jal subtracao 		#3
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_and		#4
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_or		#5
+	li $t0,0
+	sw $zero,0($t0)
 	jal mfhi_mflo		#6/7
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sll		#8
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_srl		#9
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_slt		#10
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sgt		#11
 	jal op_sra		#12
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_srav		#13
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sllv		#14
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_srlv		#15
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_xor		#16
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_nor		#17	
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sltu		#18
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_lui		#19
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_div		#20/21
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_mthi_mtlo	#22/23
+	li $t0,0
+	sw $zero,0($t0)
 	
 	#FPULA
 	jal op_muls		#24
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_adds		#25
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_subs		#26
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_divs		#27
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sqrt		#28
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_abs		#29
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_neg		#30
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_ceq		#31
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_clt		#32
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_cle		#33
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_cvtsw		#34
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_cvtws		#35
-	
-	jal testa_acertos			
+	li $t0,0
+	sw $zero,0($t0)
