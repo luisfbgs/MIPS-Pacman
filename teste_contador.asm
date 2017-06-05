@@ -1,7 +1,4 @@
 .data
-	out1: 	.asciiz "Error! "
-	out2: 	.asciiz "Acerto: "
-	out3:	.asciiz "All 35 tests succeeded!"
 	in1: 	.word 1
 	in2: 	.word 2
 	in3: 	.float 1.5
@@ -22,30 +19,6 @@ acertor:
 	li $v0,1
 	jr $ra
 error: 	li $v0,-1
-	jr $ra
-	addi $sp,$sp,-4
-	sw $a0,0($sp)
-
-	#addi $v0,$s7,104
-	addi $v0,$s7,4
-	la $a0,out1
-	lw $a1,estate
-	li $a3,0xFF00
-	syscall
-	
-	lw $a0,0($sp)
-	addi $sp,$sp,4
-	li $a2,0
-	li $a3,0xFF00
-	#li $v0,101
-	li $v0,1
-	syscall #print int
-	
-	addi $a1,$a1,3
-	sw $a1,estate
-	
-	
-	li $v1,-1
 	jr $ra
 	
 soma: 	
@@ -293,6 +266,9 @@ op_div:
 	bne $t0,$t2,error	
 	jal acertor
 	
+	li $t0,0
+	sw $zero,0($t0)
+	
 	mfhi $t0
 	li $t2,1
 	li $a0,21
@@ -317,7 +293,9 @@ op_mthi_mtlo:
 	jal acertor
 	j try2
 	chamaerror: j error
-	
+
+	li $t0,0
+	sw $zero,0($t0)
 	try2:lw $ra,0($sp)	
 	addi $sp,$sp,4
 		
@@ -476,17 +454,6 @@ op_cvtws:
 	j acertor
 	jr $ra
 	
-testa_acertos:
-	li $t0,35
-	bne $t0,$s6,pula_testa_acertos
-	la $a0,out3
-	li $a1,60
-	li $a2,90
-	li $a3,0xFF00
-	#li $v0,104
-	li $v0,4
-	syscall
-	pula_testa_acertos: jr $ra
 		
 main: 
 	#ULA			#codigo de erro
@@ -518,6 +485,8 @@ main:
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sgt		#11
+	li $t0,0
+	sw $zero,0($t0)
 	jal op_sra		#12
 	li $t0,0
 	sw $zero,0($t0)
