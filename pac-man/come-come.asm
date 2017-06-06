@@ -18,14 +18,19 @@
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
  pac_position: .word 0
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 60
+ velocidade: .word 80
  aberta: .word 1
  espelho: .word 1
  mov_ant: .word 0
+ pilha: .word  0:500
  cor: 0xff
 
  
 .text
+
+#Muda a pilha pro .data
+la $sp,pilha
+addi $sp,$sp,2000
 
 j mapa
 
@@ -98,10 +103,10 @@ funcao_reta:
 		addi $at,$zero,-1
  		mult $t0,$at #Se s0 negativo troque o sinal
  		mflo $t0
- 		li $t2,-1 #sx = negativo
+ 		addi $t2,$zero,-1 #sx = negativo
  		j endif_fr_1
 	else_fr_1:
-	 	li $t2,1 #se s0 pos, dx = 1
+	 	addi $t2,$zero,1 #se s0 pos, dx = 1
 	endif_fr_1:
 	
 	sub $t1,$t9,$t7 # dy = y1 - y0
@@ -110,10 +115,10 @@ funcao_reta:
 		addi $at,$zero,-1
  		mult $t1,$at #Se s1 negativo troque o sinal
  		mflo $t1
- 		li $t3,-1 #dy negativo
+ 		addi $t3,$zero,-1 #dy negativo
  		j endif_fr_2
 	else_fr_2: 	
-		li $t3,1 #se s3 positivo, dy = 1
+		addi $t3,$zero,1 #se s3 positivo, dy = 1
 	endif_fr_2:
 
 	if_fr_3:
@@ -165,7 +170,7 @@ funcao_reta:
 
 #Loop mapa -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loop_mapa:
-	li $s0,0
+	addi $s0,$zero,0
 	addi $sp,$sp,-40 
 	sw $ra,0($sp)
 	for_mapa1: 
@@ -188,7 +193,7 @@ loop_food:
 		
 	lw $a1,4($a0)
 	lw $a0,0($a0)
-	li $s0,0
+	addi $s0,$zero,0
 	
 	loop_food_for: beq $s0,$s1,end_loop_food_for
 		jal funcao_ponto
@@ -225,128 +230,128 @@ mapa:
 	jal preenchetela
 	
 	la $a0,coordinates1
-	li $a2,0xC0
-	li $s1,7
+	addi $a2,$zero,0xC0
+	addi $s1,$zero,7
 	jal loop_mapa	
 
 	la $a0,coordinates2
-	li $s1,9
+	addi $s1,$zero,9
 	jal loop_mapa
 			
 	la $a0,coordinates3
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 	la $a0,coordinates4
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 	la $a0,coordinates5	
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 	la $a0,coordinates6
-	li $s1,8
+	addi $s1,$zero,8
 	jal loop_mapa
 	
 	la $a0,coordinates7
-	li $s1,5
+	addi $s1,$zero,5
 	jal loop_mapa
 	
 	la $a0,coordinates8
-	li $s1,3
+	addi $s1,$zero,3
 	jal loop_mapa
 	
 	la $a0,coordinates9
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 	la $a0,coordinates10
-	li $s1,6
+	addi $s1,$zero,6
 	jal loop_mapa
 	
 	la $a0,coordinates11
-	li $s1,5
+	addi $s1,$zero,5
 	jal loop_mapa
 	
 	la $a0,coordinates12
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 	la $a0,coordinates13
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_mapa
 	
 #Funcao comida ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
 	#COMIDA DE GORILA
 	
 	#vertical aqui
-	li $s2,0 		#s2 recebe 0 se for vertical e 1,vertical 
+	addi $s2,$zero,0 		#s2 recebe 0 se for vertical e 1,vertical 
 	la $a0,food_coordinate1
 	la $a2,0xFFFFFFFF
-	li $s1,5
+	addi $s1,$zero,5
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,13
+	addi $s1,$zero,13
 	jal loop_food
 
 	addi $a0,$a0,8
-	li $s1,2
+	addi $s1,$zero,2
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,3
+	addi $s1,$zero,3
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,6
+	addi $s1,$zero,6
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,2
+	addi $s1,$zero,2
 	jal loop_food
 	
 	#horizontal aqui
 	la $a0,food_coordinate2
-	li $s2,1
+	addi $s2,$zero,1
 	
-	li $s1,12
+	addi $s1,$zero,12
 	jal loop_food	
 	
 	addi $a0,$a0,8
-	li $s1,14
+	addi $s1,$zero,14
 	jal loop_food	
 	
 	addi $a0,$a0,8
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_food	
 	
 	addi $a0,$a0,8
-	li $s1,4
+	addi $s1,$zero,4
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,11
+	addi $s1,$zero,11
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,13
+	addi $s1,$zero,13
 	jal loop_food
 	
 	addi $a0,$a0,8
-	li $s1,5
+	addi $s1,$zero,5
 	jal loop_food
 	j loop_jogo
 
 #Pinta Pac ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintapac:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
-	# guarda na pilha registradores preservados que serao utilizados
+	# guarda na pilha registradores preservados que serao utiaddizado,$zeros
 	subi $sp,$sp,8
 	sw $ra,0($sp)
 	sw $t0,4($sp)
@@ -368,7 +373,7 @@ pintapac:
 	add $s2,$zero,$zero # erro
 	add $s3,$zero,$a1 # y
 	add $s4,$zero,$a0 # x
-	li $s5,320
+	addi $s5,$zero,320
 	mult $a3,$a3 # raio = raio ao quadrado
 	mflo $a3
 circloop:
@@ -542,9 +547,9 @@ endpreenche:
 
 #Limpa pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 limpa:
-	li $t6,12
+	addi $t6,$zero,12
 	addi $t3,$a1,0
-	li $a0,0x0000
+	addi $a0,$zero,0x0000
 limpaloop:
 	addi $t6,$t6,-1
 	addi $t7,$t3,12
@@ -583,7 +588,7 @@ cima:
 	jal limpa
 	
 	lw $a1,0($t0)
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -602,7 +607,7 @@ cima:
 
 	jal boca
 	
-	li $v0,32
+	addi $v0,$zero,32
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
@@ -611,7 +616,7 @@ cima:
 	lw $a1,0($t0)
 	jal limpa
 	
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -637,7 +642,7 @@ cima:
 	sw $zero,0($t0)
 	j saicima
 saicima2:
-	li $t1,1
+	addi $t1,$zero,1
 	sw $t1,0($t0)
 saicima:
 	lw $ra,0($sp)
@@ -659,7 +664,7 @@ baixo:
 	jal limpa
 	
 	lw $a1,0($t0)
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -678,7 +683,7 @@ baixo:
 
 	jal boca
 	
-	li $v0,32
+	addi $v0,$zero,32
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
@@ -687,7 +692,7 @@ baixo:
 	lw $a1,0($t0)
 	jal limpa
 	
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -713,7 +718,7 @@ baixo:
 	sw $zero,0($t0)
 	j saibaixo
 saibaixo2:
-	li $t1,1
+	addi $t1,$zero,1
 	sw $t1,0($t0)
 saibaixo:
 	lw $ra,0($sp)
@@ -735,7 +740,7 @@ esquerda:
 	jal limpa
 	
 	lw $a1,0($t0)
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	jal pintapac
@@ -754,7 +759,7 @@ esquerda:
 
 	jal boca
 	
-	li $v0,32
+	addi $v0,$zero,32
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
@@ -763,7 +768,7 @@ esquerda:
 	lw $a1,0($t0)
 	jal limpa
 	
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	jal pintapac
@@ -789,7 +794,7 @@ esquerda:
 	sw $zero,0($t0)
 	j saiesquerda
 saiesquerda2:
-	li $t1,1
+	addi $t1,$zero,1
 	sw $t1,0($t0)
 saiesquerda:	
 	lw $ra,0($sp)	
@@ -811,7 +816,7 @@ direita:
 	jal limpa
 	
 	lw $a1,0($t0)
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	jal pintapac
@@ -830,7 +835,7 @@ direita:
 
 	jal boca
 	
-	li $v0,32
+	addi $v0,$zero,32
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
@@ -839,7 +844,7 @@ direita:
 	lw $a1,0($t0)
 	jal limpa
 	
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	jal pintapac
@@ -865,7 +870,7 @@ direita:
 	sw $zero,0($t0)
 	j saidireita
 saidireita2:
-	li $t1,1
+	addi $t1,$zero,1
 	sw $t1,0($t0)
 saidireita:	
 	lw $ra,0($sp)
@@ -881,12 +886,12 @@ loop_jogo:
 	addi $a1,$a1,1924
 	la $t1,pac_position
 	sw $a1,0($t1)
-	li $a0,0x77
+	addi $a0,$zero,0x77
 	jal pintapac
 loop:
 	la $t1,0xFF100000
 	lw $t2,4($t1)       # Tecla lida
-	li $v0,32
+	addi $v0,$zero,32
 	la $a0,velocidade
 	lw $a0,0($a0)
 	syscall
