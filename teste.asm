@@ -1,6 +1,6 @@
 .data
-	out1: 	.asciiz "Erro! "
-	out2: 	.asciiz "Acerto: "
+	out1: 	.asciiz " Erro! "
+	out2: 	.asciiz " Acerto: "
 	in1: 	.word 1
 	in2: 	.word 2
 	in3: 	.float 1.5
