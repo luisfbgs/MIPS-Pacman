@@ -18,19 +18,15 @@
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
  pac_position: .word 0
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 80
+ velocidade: .word 60
  aberta: .word 1
  espelho: .word 1
  mov_ant: .word 0
- pilha: .word  0:500
- cor: 0xff
-
+ mov: .word 0
+ atpac: .word 0
+ cor: .word 0
  
 .text
-
-#Muda a pilha pro .data
-la $sp,pilha
-addi $sp,$sp,2000
 
 j mapa
 
@@ -94,8 +90,8 @@ funcao_reta:
 	lw $t9, 12($a0)
 	
 	addi $sp, $sp, -8
-	sw $a0, 4($sp)
 	sw $ra, 0($sp)
+	sw $a0, 4($sp)
 	sub $t0,$t8,$t6
 
 	if_fr_1:
@@ -131,7 +127,7 @@ funcao_reta:
  		move $t4,$t0 #err = dx
  	endif_fr_3:
 
-	div $t4,$t4,2 # err = err/2 
+	sra $t4,$t4,1 # err = err/2 
 
 	while_fr_1:
 		addi $a0, $t6, 0
@@ -171,7 +167,7 @@ funcao_reta:
 #Loop mapa -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loop_mapa:
 	addi $s0,$zero,0
-	addi $sp,$sp,-40 
+	addi $sp,$sp,-4 
 	sw $ra,0($sp)
 	for_mapa1: 
 		beq $s0,$s1,end_for_mapa1
@@ -179,10 +175,10 @@ loop_mapa:
 		addi $a0,$a0,8
 		addi $s0,$s0,1
 		j for_mapa1
-	end_for_mapa1:
-		lw $ra,0($sp)
-		addi $sp,$sp,4
-		jr $ra
+end_for_mapa1:
+	lw $ra,0($sp)
+	addi $sp,$sp,4
+	jr $ra
  	
 #Loop food -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loop_food:
@@ -223,10 +219,6 @@ loop_food:
 
 #Funcao mapa ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
 mapa:
-	addi $sp,$sp,-8
-	sw $s0,0($sp)
-	sw $s1,4($sp)	
-
 	jal preenchetela
 	
 	la $a0,coordinates1
@@ -352,7 +344,7 @@ mapa:
 pintapac:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utiaddizado,$zeros
-	subi $sp,$sp,8
+	subi $sp,$sp,16
 	sw $ra,0($sp)
 	sw $t0,4($sp)
 	
@@ -365,8 +357,8 @@ pintapac:
 	mflo $a1
 	addi $a0,$a0,6
 	addi $a1,$a1,6
-	sw $a0,32($sp)
-	sw $a1,36($sp)
+	sw $a0,8($sp)
+	sw $a1,12($sp)
 	
 	add $s0,$zero,$zero # y inicial
 	add $s1,$zero,$a3 # x inicial
@@ -434,13 +426,13 @@ circloop:
 		j circloop
 endcirculo:
 	
-	lw $a0,32($sp)
-	lw $a1,36($sp)
+	lw $a0,8($sp)
+	lw $a1,12($sp)
 	jal preenche_pac
 	# recuperar da pilha registradores preservados utilizados
 	lw $ra,0($sp)  
 	lw $t0,4($sp)
-	addi $sp,$sp,8
+	addi $sp,$sp,16
 	jr $ra
 
 #Pinta boca ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -566,17 +558,22 @@ sailimpaloop:
 
 #Erro movimentacao pac -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 erro_dir:
-	addi $sp,$sp,4
+	la $t1,atpac
+	lw $t1,0($t1)
+	addi $t3,$zero,4
+	mult $t1,$t3
+	mflo $t1
 	la $t0,mov_ant
+	add $t0,$t0,$t1
 	lw $t0,0($t0)
 	beq $t0,$t2,loop
-	addi $t2,$t0,0
+	la $t2,mov
+	add $t2,$t2,$t1	
+	sw $t0,0($t2)
 	j dir
 
 #Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 cima:
-	addi $sp,$sp,-4
-	sw $ra,0($sp)
 	la $t0,pac_position
 	lw $a1,0($t0)
 	addi $t1,$a1,-320
@@ -588,7 +585,8 @@ cima:
 	jal limpa
 	
 	lw $a1,0($t0)
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -616,7 +614,8 @@ cima:
 	lw $a1,0($t0)
 	jal limpa
 	
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -645,14 +644,10 @@ saicima2:
 	addi $t1,$zero,1
 	sw $t1,0($t0)
 saicima:
-	lw $ra,0($sp)
-	addi $sp,$sp,4
-	jr $ra
+	j loop
 
 #Pac pra baixo -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 baixo:
-	addi $sp,$sp,-4
-	sw $ra,0($sp)
 	la $t0,pac_position
 	lw $a1,0($t0)
 	addi $t1,$a1,3840
@@ -664,7 +659,8 @@ baixo:
 	jal limpa
 	
 	lw $a1,0($t0)
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -692,7 +688,8 @@ baixo:
 	lw $a1,0($t0)
 	jal limpa
 	
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	jal pintapac
@@ -721,14 +718,10 @@ saibaixo2:
 	addi $t1,$zero,1
 	sw $t1,0($t0)
 saibaixo:
-	lw $ra,0($sp)
-	addi $sp,$sp,4
-	jr $ra
+	j loop
 	
 #Pac pra esquerda -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 esquerda:
-	addi $sp,$sp,-4
-	sw $ra,0($sp)
 	la $t0,pac_position
 	lw $a1,0($t0)
 	addi $t1,$a1,-1
@@ -740,7 +733,8 @@ esquerda:
 	jal limpa
 	
 	lw $a1,0($t0)
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	jal pintapac
@@ -768,7 +762,8 @@ esquerda:
 	lw $a1,0($t0)
 	jal limpa
 	
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	jal pintapac
@@ -797,14 +792,10 @@ saiesquerda2:
 	addi $t1,$zero,1
 	sw $t1,0($t0)
 saiesquerda:	
-	lw $ra,0($sp)	
-	addi $sp,$sp,4
-	jr $ra
+	j loop
 
 #Pac pra direita -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 direita:
-	addi $sp,$sp,-4
-	sw $ra,0($sp)
 	la $t0,pac_position
 	lw $a1,0($t0)
 	addi $t1,$a1,12
@@ -816,7 +807,8 @@ direita:
 	jal limpa
 	
 	lw $a1,0($t0)
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	jal pintapac
@@ -844,7 +836,8 @@ direita:
 	lw $a1,0($t0)
 	jal limpa
 	
-	addi $a0,$zero,0x77
+	la $a0,cor
+	lw $a0,0($a0)
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	jal pintapac
@@ -873,8 +866,27 @@ saidireita2:
 	addi $t1,$zero,1
 	sw $t1,0($t0)
 saidireita:	
-	lw $ra,0($sp)
-	addi $sp,$sp,4
+	j loop
+
+teclap1:
+	la $t3,mov
+	sw $t2,0($t3)
+	j sai_tecla
+	
+teclap2:
+
+teclap3:
+
+teclap4:
+
+
+#Armazena tecla lida ------------------------------------------------------------------------------------------------------------------
+tecla:	
+	beq $t2,119,teclap1
+	beq $t2,115,teclap1
+	beq $t2,100,teclap1
+	beq $t2,97,teclap1
+sai_tecla: 
 	jr $ra
 	
 #Loop de jogo --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -890,12 +902,27 @@ loop_jogo:
 	jal pintapac
 loop:
 	la $t1,0xFF100000
-	lw $t2,4($t1)       # Tecla lida
+	la $t0,velocidade
+	lw $t0,0($t0)
+	addi $a0,$zero,1
 	addi $v0,$zero,32
-	la $a0,velocidade
-	lw $a0,0($a0)
-	syscall
+	addi $t0,$t0,-10
+ler:	
+	beq $t0,$zero,dir
+		lw $t2,4($t1)       # Tecla lida
+		jal tecla
+		addi $t0,$t0,-1
+		syscall
+	j ler
 dir:
+	la $t2,atpac
+	sw $zero,0($t2)
+	la $t2,cor
+	addi $t1,$zero,0x77
+	sw $t1,0($t2)
+	la $t2,mov
+	lw $t2,0($t2)
+	
 	beq $t2,119,cima
 	beq $t2,115,baixo
 	beq $t2,100,direita
