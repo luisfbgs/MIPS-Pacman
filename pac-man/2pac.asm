@@ -17,7 +17,7 @@
  food_coordinate1: .word 9,22 , 57,22 , 141,22 , 81,46 , 9,166 , 141,190 , 57,202
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 100
+ velocidade: .word 80
  aberta: .word 1,1
  espelho: .word 1
   pac_position: .word 0,0
@@ -25,6 +25,7 @@
  mov: .word 0,0
  atpac: .word 0
  cor: .word 0
+ meiaberta: .word 1
  
 .text
 
@@ -590,6 +591,8 @@ cima:
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
 	beq $t1,0xC0,erro_dir
+	lw $t4,meiaberta
+	bnez $t4,cima2
 	la $t1,mov_ant
 	add $t1,$t1,$t3
 	sw $t2,0($t1)
@@ -615,12 +618,8 @@ cima:
 	addi $v1,$zero,-2
 
 	jal boca
-	
-	addi $v0,$zero,32
-	la $a0,velocidade
-	lw $a0,0($a0)
-	#syscall
-	
+	j saicima
+cima2:
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -675,6 +674,8 @@ baixo:
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
 	beq $t1,0xC0,erro_dir
+	lw $t4,meiaberta
+	bnez $t4,baixo2
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -701,12 +702,8 @@ baixo:
 	addi $v1,$zero,2
 
 	jal boca
-	
-	addi $v0,$zero,32
-	la $a0,velocidade
-	lw $a0,0($a0)
-	#syscall
-	
+	j saibaixo
+baixo2:
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -761,6 +758,8 @@ esquerda:
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
 	beq $t1,0xC0,erro_dir
+	lw $t4,meiaberta
+	bnez $t4,esquerda2
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -788,10 +787,8 @@ esquerda:
 
 	jal boca
 	
-	addi $v0,$zero,32
-	la $a0,velocidade
-	lw $a0,0($a0)
-	#syscall
+	j saiesquerda
+esquerda2:
 	
 	la $t0,pac_position
 	lw $t3,atpac
@@ -847,6 +844,8 @@ direita:
 	lb $t1,0($t1)
 	andi $t1,$t1,0xFF
 	beq $t1,0xC0,erro_dir
+	lw $t4,meiaberta
+	bnez $t4,direita2
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -873,12 +872,9 @@ direita:
 	addi $v1,$zero,0
 
 	jal boca
+	j saidireita
 	
-	addi $v0,$zero,32
-	la $a0,velocidade
-	lw $a0,0($a0)
-	#syscall
-	
+direita2:
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -971,12 +967,15 @@ loop_jogo:
 	addi $a0,$zero,0x07
 	jal pintapac
 loop:
+	la $t0,meiaberta
+	lw $t1,0($t0)
+	xori $t1,$t1,1
+	sw $t1,0($t0)
 	la $t1,0xFF100000
 	la $t0,velocidade
 	lw $t0,0($t0)
 	addi $a0,$zero,1
 	addi $v0,$zero,32
-	addi $t0,$t0,-2
 ler:	
 	beq $t0,$zero,dir
 		lw $t2,4($t1)       # Tecla lida
@@ -992,8 +991,12 @@ dir:
 	addi $t1,$zero,0x77
 	sw $t1,0($t2)
 	la $t2,mov
+	lw $t0,meiaberta
+	beqz $t0,ddir
+	la $t2,mov_ant
+ddir:	
 	lw $t2,0($t2)
-	
+
 	beq $t2,119,cima
 	beq $t2,115,baixo
 	beq $t2,100,direita
@@ -1014,6 +1017,10 @@ dir2:
 	addi $t1,$zero,0x07
 	sw $t1,0($t2)
 	la $t2,mov
+	lw $t0,meiaberta
+	beqz $t0,ddir2
+	la $t2,mov_ant
+ddir2:	
 	lw $t2,4($t2)
 	
 	beq $t2,105,cima
