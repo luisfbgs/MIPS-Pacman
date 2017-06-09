@@ -1,0 +1,96 @@
+
+FETCH: 
+	estado inicial
+
+	oALUSrcB = 001
+	oIrWrite = 1
+	MemRead = 1
+	PCWrite = 1
+	outros sinais são zerados
+
+	proximo estado = DECODE
+
+DECODE:
+	estado passado(FETCH)
+
+	oALUSrcB = 011
+	outros sinais são zerados
+
+	proximos estados(-->): 
+		RM( ADD ou ADDU ou SUB ou SUBU)
+		JR()
+		SHIFT( SLL SRL SRA)
+		SYS ---> RFMT
+		JUMP
+		BEQ
+		BNE
+		JAL
+		BGTZ
+		BLEZ
+		BGEZ
+		BGEZAL
+		BLTZ
+		BLTZAL
+		LWSW( qlqr load ou store)
+		IFMTL( ANDI XORI ORI)
+		IFMTA( ADDI ADDIU SLTI SLTIU LUI )
+		FPUMTC1( FMTMTC )
+		FPUBC1T
+		FPUBC1F
+		FPUMOV( FMTW FMTS )
+		FPUCOMP(EQ LT LE)
+		FPUFR
+		COP0EXC
+		CP0MTC0
+
+RM:
+	estado passado(DECODE)	
+
+	oALUSrcA = 01
+  	oALUOp = 11
+  	outros sinais zerados
+
+  	proximo estado:
+  		FETCH
+
+JR:
+	estado passado(DECODE)	
+
+	oPCWriteBNE = 1
+	oPCSource = 001
+	oALUOp = 10
+	outros sinais zerados
+
+	proximo estado:
+  		FETCH	
+
+SHIFT:
+	estado passado(DECODE)	
+
+	oALUSrcA = 10
+	oALUOp = 10	 
+	outros sinais zerados		
+
+	proximo estado:
+		RFMT2
+
+JUMP:
+	estado passado(DECODE)
+
+	oPCSource = 010
+	oPCWrite = 1
+	outros sinais zerados
+
+	proximo estado:
+  		FETCH		
+
+BEQ:
+	estado passado(DECODE)  
+
+	oALUSrcA = 01	
+	oALUOp = 01
+	oPCSource = 001
+	outros sinais zerados
+
+	proximo estado:
+  		FETCH	
