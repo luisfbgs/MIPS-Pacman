@@ -41,7 +41,7 @@ DECODE:
 		FPUCOMP(EQ LT LE)
 		FPUFR
 		COP0EXC
-		CP0MTC0
+		COP0MTC0
 
 RM:
 	estado passado(DECODE)	
@@ -94,3 +94,184 @@ BEQ:
 
 	proximo estado:
   		FETCH	
+BNE: 
+	estado passado(DECODE)  
+
+	oALUSrcA = 01
+	oALUOp = 01
+	oPCSource = 001
+	oPCWrite = 1
+
+	proximo estado:
+  		FETCH	
+
+JAL:
+
+	estado passado(DECODE)
+
+	oRegWrite = 1
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 010
+	oPCWrite = 1
+	oStore = 001
+
+	proximo estado:
+  		FETCH
+
+BGTZ:
+
+	estado passado(DECODE)
+
+	oALUSrcA = 01
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 001	  		
+	oPCWriteBEQ = 1
+
+	proximo estado:
+  		FETCH
+
+BLEZ:  	
+	estado passado(DECODE)
+
+	oALUSrcA = 01
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 001
+	oPCWriteBNE = 1
+
+	proximo estado:
+  		FETCH
+BGEZ:
+	estado passado(DECODE)
+
+	oALUSrcA = 01
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 001
+	oPCWriteBEQ = 1
+
+	proximo estado:
+  		FETCH
+
+BLTZ:  	
+	estado passado(DECODE)
+
+	oALUSrcA = 01
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 001
+	oPCWriteBNE = 1
+
+	proximo estado:
+  		FETCH
+
+BLTZAL:
+	estado passado(DECODE)
+
+	oRegWrite = 1  	
+	oALUSrcA = 01
+	oALUSrcB = 101
+	oALUOp = 11
+	oPCSource = 001
+	oPCWriteBNE = 1
+	oStore = 111
+
+	proximo estado:
+  		FETCH
+
+LWSW:
+	estado passado(DECODE)
+
+	oALUSrcA = 01
+	oALUSrcB = 010
+
+	proximo estado:
+	***********
+		LW( lw,lb,lbu,lh,lhu,lwc1)
+		STATE_SB( sb )
+		STATE_SH( sh )
+		SW ( sw )
+		FPUSWC1( swc1 )
+
+IFMTL:
+	estado passado(DECODE)			
+	oALUSrcA = 01
+	oALUSrcB = 100
+	oALUOp = 11
+
+	proximo estado:
+	***********
+		IFMT2
+
+IFMTA:
+	estado passado(DECODE)			
+	oALUSrcA = 01
+	oALUSrcB = 010
+	oALUOp = 11
+
+	proximo estado:
+	***********
+		IFMT2		
+
+FPUMTC1:
+	estado passado(DECODE)
+	
+	oFPRegDst = 01
+	oFPDataReg=10
+	oFPRegWrite=1	
+
+	proximo estado:
+		wCOP0PendingInterrupt ? COP0EXC : FETCH
+
+FPUBC1T:
+	estado passado(DECODE)
+
+	oPCSource = 001
+	oFPPCWriteBc1t = 1
+
+	proximo estado:
+  		FETCH			
+
+FPUBC1F:
+	estado passado(DECODE)
+
+	oPCSource = 001
+	oFPPCWriteBc1f = 1
+
+	proximo estado:
+  		FETCH	
+
+FPUMOV:
+	estado passado(DECODE)
+
+	oFPDataReg = 11
+	oFPRegWrite = 1
+
+	wCOP0PendingInterrupt ? COP0EXC : FETCH;
+
+FPUCOMP:
+	estado passado(DECODE)
+
+	oFPFlagWrite = 1	
+
+	proximo estado:
+  		FETCH		
+
+FPUFR:
+	estado passado(DECODE)
+	
+	oFPRegWrite = 1  
+
+	proximo estado:
+	************
+		FPUFR2		
+
+COP0MTC0:
+	estado passado(DECODE)	
+
+	todos estados zerados
+
+	proximo estado:
+		FETCH
