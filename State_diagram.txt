@@ -275,3 +275,10 @@ COP0MTC0:
 
 	proximo estado:
 		FETCH
+
+FPUFR2:
+
+	oFPRegWrite = 1		
+
+	proximo estado:
+		FETCH, COP0EXC
