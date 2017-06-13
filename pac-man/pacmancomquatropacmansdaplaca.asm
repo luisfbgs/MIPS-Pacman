@@ -947,25 +947,25 @@ teclap4:
 #Armazena tecla lida ------------------------------------------------------------------------------------------------------------------
 tecla:	
 	# Pac-man 1
-	beq $t2,119,teclap1	# cima - w
-	beq $t2,115,teclap1	# baixo - s
-	beq $t2,100,teclap1	# direita - d
-	beq $t2,97,teclap1	# esquerda - a
+	beq $t2,0x1D,teclap1	# cima - w
+	beq $t2,0x1B,teclap1	# baixo - s
+	beq $t2,0x23,teclap1	# direita - d
+	beq $t2,0x1C,teclap1	# esquerda - a
 	
-	beq $t2,105,teclap2	# cima - i
-	beq $t2,106,teclap2	# baixo - k
-	beq $t2,107,teclap2	# direita - l
-	beq $t2,108,teclap2	# esquerda - j
+	beq $t2,0x43,teclap2	# cima - i
+	beq $t2,0x42,teclap2	# baixo - k
+	beq $t2,0x4b,teclap2	# direita - l
+	beq $t2,0x3b,teclap2	# esquerda - j
 	
-	beq $t2,56,teclap3	# cima - 8
-	beq $t2,53,teclap3	# baixo - 5
-	beq $t2,54,teclap3	# direita - 6
-	beq $t2,52,teclap3	# esquerda - 4
+	beq $t2,0x75,teclap3	# cima - 8
+	beq $t2,0x72,teclap3	# baixo - 5
+	beq $t2,0x74,teclap3	# direita - 6
+	beq $t2,0x6B,teclap3	# esquerda - 4
 
-	beq $t2,102,teclap4	# cima - f
-	beq $t2,118,teclap4	# baixo - v
-	beq $t2,98,teclap4	# direita - b
-	beq $t2,99,teclap4	# esquerda - c
+	beq $t2,0x2B,teclap4	# cima - f
+	beq $t2,0x2A,teclap4	# baixo - v
+	beq $t2,0x32,teclap4	# direita - b
+	beq $t2,0x21,teclap4	# esquerda - c
 sai_tecla: 
 	jr $ra
 	
@@ -1018,18 +1018,19 @@ loop:
 	lw $t1,0($t0)
 	xori $t1,$t1,1
 	sw $t1,0($t0)
-	la $t1,0xFF100000
+	la $t1,0xFFFF0100
 	la $t0,velocidade
 	lw $t0,0($t0)
 	addi $a0,$zero,1
 	addi $v0,$zero,32
+	#sw $zero,0($zero)
 	li $t5,0xFFFF050C
 	lw $t0,0($t5)
 	addi $t0,$t0,80
 	lw $t4,0($t5)
 ler:	
 	blt $t4,$zero,dir
-		lw $t2,4($t1)       # Tecla lida
+		lb $t2,0($t1)       # Tecla lida
 		jal tecla
 		lw $t4,0($t5)
 		sub $t4,$t0,$t4
@@ -1049,10 +1050,10 @@ dir:
 ddir:	
 	lw $t2,0($t2)
 
-	beq $t2,119,cima
-	beq $t2,115,baixo
-	beq $t2,100,direita
-	beq $t2,97,esquerda
+	beq $t2,0x1D,cima	# cima - w
+	beq $t2,0x1B,baixo	# baixo - s
+	beq $t2,0x23,direita	# direita - d
+	beq $t2,0x1C,esquerda	# esquerda - a
 	
 	la $t0,mov_ant
 	lw $t0,0($t0)
@@ -1077,10 +1078,10 @@ dir2:
 ddir2:	
 	lw $t2,4($t2)
 	
-	beq $t2,105,cima
-	beq $t2,107,baixo
-	beq $t2,108,direita
-	beq $t2,106,esquerda
+	beq $t2,0x43,cima	# cima - i
+	beq $t2,0x42,baixo	# baixo - k
+	beq $t2,0x4b,direita	# direita - l
+	beq $t2,0x3b,esquerda	# esquerda - j
 	
 	la $t0,mov_ant
 	lw $t0,4($t0)
@@ -1105,10 +1106,10 @@ dir3:
 ddir3:	
 	lw $t2,8($t2)
 	
-	beq $t2,56,cima
-	beq $t2,53,baixo
-	beq $t2,54,direita
-	beq $t2,52,esquerda
+	beq $t2,0x75,cima	# cima - 8
+	beq $t2,0x72,baixo	# baixo - 5
+	beq $t2,0x74,direita	# direita - 6
+	beq $t2,0x6B,esquerda	# esquerda - 4
 	
 	la $t0,mov_ant
 	lw $t0,8($t0)
@@ -1133,10 +1134,10 @@ dir4:
 ddir4:	
 	lw $t2,12($t2)
 	
-	beq $t2,102,cima
-	beq $t2,118,baixo
-	beq $t2,98,direita
-	beq $t2,99,esquerda
+	beq $t2,0x2B,cima	# cima - f
+	beq $t2,0x2A,baixo	# baixo - v
+	beq $t2,0x32,direita	# direita - b
+	beq $t2,0x21,esquerda	# esquerda - c
 	
 	la $t0,mov_ant
 	lw $t0,12($t0)
