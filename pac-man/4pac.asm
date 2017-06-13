@@ -26,6 +26,7 @@
  atpac: .word 0
  cor: .word 0
  meiaberta: .word 1
+ # Define quantos pac-mans vao ter no jogo (1~4)
  players: .word 4
  
 .text
@@ -944,25 +945,26 @@ teclap4:
 
 #Armazena tecla lida ------------------------------------------------------------------------------------------------------------------
 tecla:	
-	beq $t2,119,teclap1
-	beq $t2,115,teclap1
-	beq $t2,100,teclap1
-	beq $t2,97,teclap1
+	# Pac-man 1
+	beq $t2,119,teclap1	# cima - w
+	beq $t2,115,teclap1	# baixo - s
+	beq $t2,100,teclap1	# direita - d
+	beq $t2,97,teclap1	# esquerda - a
 	
-	beq $t2,105,teclap2
-	beq $t2,106,teclap2
-	beq $t2,107,teclap2
-	beq $t2,108,teclap2
+	beq $t2,105,teclap2	# cima - i
+	beq $t2,106,teclap2	# baixo - k
+	beq $t2,107,teclap2	# direita - l
+	beq $t2,108,teclap2	# esquerda - j
 	
-	beq $t2,56,teclap3
-	beq $t2,53,teclap3
-	beq $t2,54,teclap3
-	beq $t2,52,teclap3
+	beq $t2,56,teclap3	# cima - 8
+	beq $t2,53,teclap3	# baixo - 5
+	beq $t2,54,teclap3	# direita - 6
+	beq $t2,52,teclap3	# esquerda - 4
 
-	beq $t2,102,teclap4
-	beq $t2,118,teclap4
-	beq $t2,98,teclap4
-	beq $t2,99,teclap4
+	beq $t2,102,teclap4	# cima - f
+	beq $t2,118,teclap4	# baixo - v
+	beq $t2,98,teclap4	# direita - b
+	beq $t2,99,teclap4	# esquerda - c
 sai_tecla: 
 	jr $ra
 	
@@ -1077,6 +1079,7 @@ ddir2:
 	la $t0,mov_ant
 	lw $t0,4($t0)
 	bne $t0,$t2,dirr2
+	lw $t0,players
 	blt $t0,3,loop
 	j dir3
 dirr2:
@@ -1104,6 +1107,7 @@ ddir3:
 	la $t0,mov_ant
 	lw $t0,8($t0)
 	bne $t0,$t2,dirr3
+	lw $t0,players
 	blt $t0,4,loop
 	j dir4
 dirr3:
