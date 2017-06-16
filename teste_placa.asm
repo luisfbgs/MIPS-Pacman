@@ -12,6 +12,7 @@
 .text
 li $s7,0
 li $s6,0
+li $sp,0x10011ffc
 
 j main
 
@@ -106,6 +107,7 @@ mfhi_mflo:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	
+	sw $zero,0($t0)
 	move $t2,$zero
 	li $a0,7
 	mfhi $t0
@@ -295,10 +297,10 @@ op_mthi_mtlo:
 	chamaerror: j error
 
 	li $t0,0
-	sw $zero,0($t0)
 	try2:lw $ra,0($sp)	
 	addi $sp,$sp,4
-		
+	
+	sw $zero,0($t0)
 	li $a0,23
 	mtlo $t0
 	mflo $t1
@@ -487,9 +489,9 @@ main:
 	jal op_sgt		#11
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_sra		#12
+	#jal op_sra		#12
 	li $t0,0
-	sw $zero,0($t0)
+	#sw $zero,0($t0)
 	jal op_srav		#13
 	li $t0,0
 	sw $zero,0($t0)
