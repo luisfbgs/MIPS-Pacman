@@ -107,7 +107,7 @@ mfhi_mflo:
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	
-	sw $zero,0($t0)
+	#sw $zero,0($zero)
 	move $t2,$zero
 	li $a0,7
 	mfhi $t0
@@ -205,6 +205,7 @@ op_srlv:
 	srlv $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	
 	j acertor
 	jr $ra
 	
@@ -269,7 +270,7 @@ op_div:
 	jal acertor
 	
 	li $t0,0
-	sw $zero,0($t0)
+	sw $zero,0($zero)
 	
 	mfhi $t0
 	li $t2,1
@@ -295,12 +296,12 @@ op_mthi_mtlo:
 	jal acertor
 	j try2
 	chamaerror: j error
-
 	li $t0,0
-	try2:lw $ra,0($sp)	
+	try2:
+	lw $ra,0($sp)	
 	addi $sp,$sp,4
 	
-	sw $zero,0($t0)
+	sw $zero,0($zero)
 	li $a0,23
 	mtlo $t0
 	mflo $t1
@@ -321,7 +322,7 @@ op_muls:
 	bc1f error
 	j acertor
 	
-	jr $ra		
+	jr $ra	
 	
 op_adds:
 	l.s $f0,in3																																																					
@@ -477,12 +478,12 @@ main:
 	jal mfhi_mflo		#6/7
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_sll		#8
+	#jal op_sll		#8
 	li $t0,0
-	sw $zero,0($t0)
-	jal op_srl		#9
+	#sw $zero,0($t0)
+	#jal op_srl		#9
 	li $t0,0
-	sw $zero,0($t0)
+	#sw $zero,0($t0)
 	jal op_slt		#10
 	li $t0,0
 	sw $zero,0($t0)
