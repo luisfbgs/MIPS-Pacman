@@ -16,10 +16,10 @@
  coordinates13: .word 64,198 , 135,198 , 135,221 , 64,221 , 64,198
  food_coordinate1: .word 9,22 , 57,22 , 141,22 , 81,46 , 9,166 , 141,190 , 57,202
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
+ espelho: .word 1
  boca_coord: .word 0,0 , 0,0
  velocidade: .word 80
  aberta: .word 1,1,1,1
- espelho: .word 1
  pac_position: .word 0,0,0,0
  mov_ant: .word 0,0,0,0
  mov: .word 0,0,0,0
@@ -550,8 +550,8 @@ limpaloop:
 	addi $t7,$t3,12
 limpaloop2:    
 	beq $t3,$t7,sailimpaloop
-	sh $a0,0($t3)
-	addi $t3,$t3,2
+	sb $a0,0($t3)
+	addi $t3,$t3,1
 	j limpaloop2
 sailimpaloop:
 	addi $t3,$t3,308
@@ -574,12 +574,10 @@ prox_pac:
 # Mesmo pac --------------------------------------------------------------
 msm_pac:
 	lw $t1,atpac
-	beq $t1,0,dir
-	lw $t0,players
-	blt $t0,2,loop
-	beq $t1,4,dir2
-	beq $t1,8,dir3
-	beq $t1,12,dir4
+	beq $t1,0,ddir
+	beq $t1,4,ddir2
+	beq $t1,8,ddir3
+	beq $t1,12,ddir4
 
 
 #Erro movimentacao pac -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -588,11 +586,9 @@ erro_dir:
 	lw $t1,0($t1)
 	la $t0,mov_ant
 	add $t0,$t0,$t1
-	lw $t0,0($t0)
-	beq $t0,$t2,prox_pac
-	la $t2,mov
-	add $t2,$t2,$t1	
-	sw $t0,0($t2)
+	lw $t1,0($t0)
+	beq $t1,$t2,prox_pac
+	la $t2,mov_ant
 	j msm_pac
 
 #Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1024,7 +1020,7 @@ loop:
 	addi $v0,$zero,32
 ler:	
 	beq $t0,$zero,dir
-		lw $t2,4($t1)       # Tecla lida
+		lb $t2,4($t1)       # Tecla lida
 		jal tecla
 		addi $t0,$t0,-1
 		syscall
@@ -1048,15 +1044,9 @@ ddir:
 	beq $t2,100,direita
 	beq $t2,97,esquerda
 	
-	la $t0,mov_ant
-	lw $t0,0($t0)
-	bne $t0,$t2,dirr
-	lw $t0,players
-	blt $t0,2,loop
-	j dir2
-dirr:
-	addi $t2,$t0,0
-	j dir
+	lw $t1,players
+	blt $t1,2,loop
+	
 dir2:	
 	la $t2,atpac
 	addi $t1,$zero,4
@@ -1076,15 +1066,9 @@ ddir2:
 	beq $t2,108,direita
 	beq $t2,106,esquerda
 	
-	la $t0,mov_ant
-	lw $t0,4($t0)
-	bne $t0,$t2,dirr2
 	lw $t0,players
 	blt $t0,3,loop
-	j dir3
-dirr2:
-	addi $t2,$t0,0
-	j dir2
+	
 dir3:	
 	la $t2,atpac
 	addi $t1,$zero,8
@@ -1104,15 +1088,9 @@ ddir3:
 	beq $t2,54,direita
 	beq $t2,52,esquerda
 	
-	la $t0,mov_ant
-	lw $t0,8($t0)
-	bne $t0,$t2,dirr3
 	lw $t0,players
 	blt $t0,4,loop
-	j dir4
-dirr3:
-	addi $t2,$t0,0
-	j dir3
+	
 dir4:	
 	la $t2,atpac
 	addi $t1,$zero,12
@@ -1132,10 +1110,4 @@ ddir4:
 	beq $t2,98,direita
 	beq $t2,99,esquerda
 	
-	la $t0,mov_ant
-	lw $t0,12($t0)
-	bne $t0,$t2,dirr4
 	j loop
-dirr4:
-	addi $t2,$t0,0
-	j dir4
