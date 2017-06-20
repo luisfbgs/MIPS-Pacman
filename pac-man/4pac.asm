@@ -18,7 +18,7 @@
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
  espelho: .word 1
  boca_coord: .word 0,0 , 0,0
- velocidade: .word 80
+ velocidade: .word 100
  aberta: .word 1,1,1,1
  pac_position: .word 0,0,0,0
  mov_ant: .word 0,0,0,0
@@ -446,7 +446,7 @@ boca:
 	sw $t0,4($sp)
 	
 	add $a2,$zero,$zero
-	la $t0,320
+	addi $t0,$zero,320
 	subi $a1,$a1,4278190080
 	div $a1,$t0
 	mfhi $a0
@@ -1015,16 +1015,13 @@ loop:
 	sw $t1,0($t0)
 	la $t1,0xFF100000
 	la $t0,velocidade
-	lw $t0,0($t0)
-	addi $a0,$zero,1
+	lw $a0,0($t0)
 	addi $v0,$zero,32
 ler:	
-	beq $t0,$zero,dir
-		lb $t2,4($t1)       # Tecla lida
-		jal tecla
-		addi $t0,$t0,-1
-		syscall
-	j ler
+	lb $t2,4($t1)       # Tecla lida
+	jal tecla
+	addi $t0,$t0,-1
+	syscall
 dir:
 	la $t2,atpac
 	addi $t1,$zero,0
