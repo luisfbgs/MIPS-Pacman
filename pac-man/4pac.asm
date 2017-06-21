@@ -590,6 +590,42 @@ erro_dir:
 	beq $t1,$t2,prox_pac
 	la $t2,mov_ant
 	j msm_pac
+#Come -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+come:
+	addi $t6,$zero,6
+	addi $s2,$zero,308
+	addi $s1,$zero,12
+	j coome
+come2:
+	addi $t6,$zero,12
+	addi $s2,$zero,314
+	addi $s1,$zero,6
+coome:
+	addi $t5,$a1,0
+	addi $a2,$zero,0xFF
+	addi $v0,$zero,0
+	addi $v1,$zero,0	
+comeloop:
+	addi $t6,$t6,-1
+	add $t7,$t5,$s1
+comeloop2:    
+	beq $t5,$t7,saicomeloop
+	lb $a0,0($t5)
+	andi $a0,$a0,0xFF
+	addi $t5,$t5,1
+	beq $a0,$a2,ponto
+	bnez $a0,bate
+	j comeloop2
+ponto:
+	addi $v0,$zero,1
+	j comeloop2
+bate:
+	addi $v1,$zero,1
+	j comeloop2
+saicomeloop:
+	add $t5,$t5,$s2
+	bne $t6,$zero,comeloop
+	jr $ra
 
 #Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 cima:
@@ -597,12 +633,15 @@ cima:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,-320
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
-	lw $t4,meiaberta
+	
+	addi $a1,$a1,-1920
+	jal come
+	bnez $v1,erro_dir
+	addi $a1,$a1,1920
+	
+	lw $t4,meiaberta	
 	bnez $t4,cima2
+	
 	la $t1,mov_ant
 	add $t1,$t1,$t3
 	sw $t2,0($t1)
@@ -678,12 +717,15 @@ baixo:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,3840
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a1,$a1,3840
+	jal come
+	bnez $v1,erro_dir
+	addi $a1,$a1,-3840
+	
 	lw $t4,meiaberta
 	bnez $t4,baixo2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -760,12 +802,15 @@ esquerda:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,-1
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a1,$a1,-6
+	jal come2
+	bnez $v1,erro_dir
+	addi $a1,$a1,6
+	
 	lw $t4,meiaberta
 	bnez $t4,esquerda2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -844,12 +889,15 @@ direita:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,12
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a1,$a1,12
+	jal come2
+	bnez $v1,erro_dir
+	addi $a1,$a1,-12
+	
 	lw $t4,meiaberta
 	bnez $t4,direita2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -1006,7 +1054,7 @@ loop_jogo:
 	addi $a1,$a1,71344
 	la $t1,pac_position
 	sw $a1,12($t1)
-	addi $a0,$zero,0x04
+	addi $a0,$zero,0x1C
 	jal pintapac	
 loop:
 	la $t0,meiaberta
@@ -1093,7 +1141,7 @@ dir4:
 	addi $t1,$zero,12
 	sw $t1,0($t2)
 	la $t2,cor
-	addi $t1,$zero,0x04
+	addi $t1,$zero,0x1C
 	sw $t1,0($t2)
 	la $t2,mov
 	lw $t0,meiaberta
