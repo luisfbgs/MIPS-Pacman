@@ -1088,9 +1088,6 @@ dir:
 	addi $t1,$zero,0x77
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir
-	la $t2,mov_ant
 ddir:	
 	lw $t2,0($t2)
 
@@ -1110,9 +1107,6 @@ dir2:
 	addi $t1,$zero,0x07
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir2
-	la $t2,mov_ant
 ddir2:	
 	lw $t2,4($t2)
 	
@@ -1132,9 +1126,6 @@ dir3:
 	addi $t1,$zero,0x70
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir3
-	la $t2,mov_ant
 ddir3:	
 	lw $t2,8($t2)
 	
@@ -1154,9 +1145,6 @@ dir4:
 	addi $t1,$zero,0x1C
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir4
-	la $t2,mov_ant
 ddir4:	
 	lw $t2,12($t2)
 	
