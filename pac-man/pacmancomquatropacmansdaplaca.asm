@@ -350,6 +350,7 @@ mapa:
 
 #Colide ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 colide:
+	addi $a2,$zero,0x01
 	sb $a2,0($a1)
 	sb $a2,5($a1)
 	sb $a2,6($a1)
@@ -366,103 +367,39 @@ colide:
 	
 #Pinta Pac ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintapac:
-	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
-	# guarda na pilha registradores preservados que serao utiaddizado,$zeros
-	subi $sp,$sp,20
-	sw $ra,0($sp)
-	sw $t0,4($sp)
-	sw $a1,16($sp)
+	addi $t6,$zero,6
+	addi $t3,$a1,0
+	addi $t8,$t3,3210
+	addi $t3,$t3,321
+	addi $t5,$zero,3
+pinta_pacloop:
+	addi $t6,$t6,-1
+	addi $t7,$t3,10
+	sub $t7,$t7,$t5
+	add $t3,$t3,$t5
+	sub $t8,$t8,$t5
+pinta_pacloop2:    
+	beq $t3,$t7,saipinta_pacloop
+	sb $a0,0($t3)
+	sb $a0,0($t8)
+	addi $t3,$t3,1
+	addi $t8,$t8,-1
+	j pinta_pacloop2
+saipinta_pacloop:
+	addi $t3,$t3,310
+	add $t3,$t3,$t5
+	addi $t8,$t8,-310
+	sub $t8,$t8,$t5
+	beqz $t5,aaaa
+	addi $t5,$t5,-1
+aaaa:
+	bne $t6,$zero,pinta_pacloop
 	
-	move $a2,$a0
-	la $a3,5
-	la $t0,320
-	subi $a1,$a1,4278190080
-	div $a1,$t0
-	mfhi $a0
-	mflo $a1
-	addi $a0,$a0,6
-	addi $a1,$a1,6
-	sw $a0,8($sp)
-	sw $a1,12($sp)
-	
-	add $s0,$zero,$zero # y inicial
-	add $s1,$zero,$a3 # x inicial
-	add $s2,$zero,$zero # erro
-	add $s3,$zero,$a1 # y
-	add $s4,$zero,$a0 # x
-	addi $s5,$zero,320
-	mult $a3,$a3 # raio = raio ao quadrado
-	mflo $a3
-circloop:
-	blt $s1,$s0,endcirculo
-		# colocar pontos simetricamente nos oito octantes do circulo
-		add $a0,$s4,$s1 
-		add $a1,$s3,$s0
-		jal funcao_ponto
-
-	      	add $a0,$s4,$s0
-		add $a1,$s3,$s1
-		jal funcao_ponto
-     	
-        	sub $a0,$s4,$s0
-		add $a1,$s3,$s1
-		jal funcao_ponto
-
-        	sub $a0,$s4,$s1
-		add $a1,$s3,$s0
-		jal funcao_ponto
-
-        	sub $a0,$s4,$s1
-		sub $a1,$s3,$s0
-		jal funcao_ponto
-	
-        	sub $a0,$s4,$s0
-		sub $a1,$s3,$s1
-		jal funcao_ponto
-
-        	add $a0,$s4,$s0
-		sub $a1,$s3,$s1
-		jal funcao_ponto
-
-        	add $a0,$s4,$s1
-		sub $a1,$s3,$s0
-		jal funcao_ponto
-		
-		addi $s0,$s0,1 # incrementa o y
-		
-		mult $s0,$s0
-		mflo $t0
-		mult $s1,$s1
-		mflo $t1
-		add $t1,$t0,$t1
-		sub $t2,$t1,$a3 # salva em $t2 o valor y^2 + x^2 - r^2
-		
-		addi $t1,$s1,-1
-		mult $t1,$t1
-		mflo $t1
-		add $t1,$t0,$t1
-		sub $t3,$t1,$a3 # salva em $t3 o valor y^2 + (x-1)^2 - r^2
-		
-		abs $t2,$t2
-		abs $t3,$t3
-		
-		blt $t2,$t3,circloop # caso o valor de $t3 seja mais proximo de 0, x recebe x - 1, caso contratio x matem seu valor
-		addi $s1,$s1,-1
-		j circloop
-endcirculo:
-	
-	lw $a0,8($sp)
-	lw $a1,12($sp)
-	jal preenche_pac
-	
-	lw $a1,16($sp)
-	addi $a2,$zero,0xC8
+	sw $ra,-4($sp)
 	jal colide
+	sb $a2,0($a1)
+	lw $ra,-4($sp)	
 	
-	# recuperar da pilha registradores preservados utilizados
-	lw $ra,0($sp)  
-	lw $t0,4($sp)
-	addi $sp,$sp,20
 	jr $ra
 
 #Pinta boca ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -523,7 +460,6 @@ boca:
 	jal preenche_pac
 	
 	lw $a1,8($sp)
-	addi $a2,$zero,0xC8
 	jal colide
 	sb $a2,0($a1)
 	
@@ -533,7 +469,7 @@ boca:
 	jr $ra
 
 #Preenche Pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-preenche_pac: jr $ra
+preenche_pac:
  	# $a0 = x, $a1 = y, $a2 = cor
  	addi $sp,$sp,-4
 	
@@ -674,6 +610,7 @@ cima:
 	addi $s7,$zero,4
 	addi $v0,$zero,0
 	addi $v1,$zero,-2
+
 
 	jal boca
 	j saicima
@@ -848,10 +785,10 @@ esquerda:
 	jal pintapac
 	
 	lw $a1,0($t0)
-	addi $s0,$zero,5
+	addi $s0,$zero,4
 	addi $s1,$zero,6
 	addi $s2,$zero,-4
-	addi $s3,$zero,-3
+	addi $s3,$zero,-4
 	addi $s4,$zero,0
 	addi $s5,$zero,6
 	addi $s6,$zero,4
@@ -887,7 +824,7 @@ esquerda2:
 	lw $t1,0($t0)
 	beq $t1,$zero,saiesquerda2
 	
-	addi $s0,$zero,5
+	addi $s0,$zero,4
 	addi $s1,$zero,6
 	addi $s2,$zero,-4
 	addi $s3,$zero,-6
