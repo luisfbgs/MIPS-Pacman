@@ -16,10 +16,10 @@
  coordinates13: .word 64,198 , 135,198 , 135,221 , 64,221 , 64,198
  food_coordinate1: .word 9,22 , 57,22 , 141,22 , 81,46 , 9,166 , 141,190 , 57,202
  food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
- boca_coord: .word 0,0 , 0,0
- velocidade: .word 80
- aberta: .word 1,1,1,1
  espelho: .word 1
+ boca_coord: .word 0,0 , 0,0
+ velocidade: .word 100
+ aberta: .word 1,1,1,1
  pac_position: .word 0,0,0,0
  mov_ant: .word 0,0,0,0
  mov: .word 0,0,0,0
@@ -27,10 +27,15 @@
  cor: .word 0
  meiaberta: .word 1
  # Define quantos pac-mans vao ter no jogo (1~4)
- players: .word 4 
+ players: .word 4
+ 
 .text
+addi $t0,$zero,1
+la $t1,espelho
+sw $t0,0($t1)
 
 li $sp,0x10011ffc
+
 j mapa
 
 #Preenche tela de preto -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -45,17 +50,16 @@ j mapa
  	addi $t0,$t0,4
  	j tela	
 saitela: 
-	#sw $zero,0($zero)
  	jr $ra 	
 
 #Funcao ponto ----------------------------------------------------------------------------------------------------------------------------------------------------
 funcao_ponto:
 	# $a0 = x, $a1 = y
 	
-	addi $sp, $sp, -16
-	sw $t0, 4($sp)
-	sw $t1, 8($sp)
-	sw $t9, 12($sp)
+	addi $sp, $sp, -12
+	sw $t0, 0($sp)
+	sw $t1, 4($sp)
+	sw $t9, 8($sp)
 	#Uso do t0(variaveis) e t1(endere?o)
 	move $t0,$a1
 	addi $at,$zero,320
@@ -75,10 +79,10 @@ funcao_ponto:
 	sub $t1,$t1,$t0
 	sb $a2,0($t1)
 saiponto:	
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $t9, 12($sp)
-	addi $sp, $sp, 16
+	lw $t0, 0($sp)
+	lw $t1, 4($sp)
+	lw $t9, 8($sp)
+	addi $sp, $sp, 12
 	jr $ra
 
 #Funcao reta -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -93,9 +97,9 @@ funcao_reta:
 	lw $t8, 8($a0)
 	lw $t9, 12($a0)
 	
-	addi $sp, $sp, -12
-	sw $ra, 4($sp)
-	sw $a0, 8($sp)
+	addi $sp, $sp, -8
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
 	sub $t0,$t8,$t6
 
 	if_fr_1:
@@ -163,16 +167,16 @@ funcao_reta:
 		endif_fr_5:
 		j while_fr_1
 	ew_fr_1:
-	lw $ra, 4($sp)
-	lw $a0, 8($sp)
-	addi $sp, $sp, 12
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	addi $sp, $sp, 8
 	jr $ra
 
 #Loop mapa -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loop_mapa:
 	addi $s0,$zero,0
-	addi $sp,$sp,-8 
-	sw $ra,4($sp)
+	addi $sp,$sp,-4 
+	sw $ra,0($sp)
 	for_mapa1: 
 		beq $s0,$s1,end_for_mapa1
 		jal funcao_reta
@@ -180,16 +184,16 @@ loop_mapa:
 		addi $s0,$s0,1
 		j for_mapa1
 end_for_mapa1:
-	lw $ra,4($sp)
-	addi $sp,$sp,8
+	lw $ra,0($sp)
+	addi $sp,$sp,4
 	jr $ra
  	
 #Loop food -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 loop_food:
-	addi $sp,$sp,-16
-	sw $ra,4($sp)
-	sw $a0,8($sp)
-	sw $a1,12($sp)	
+	addi $sp,$sp,-12
+	sw $ra,0($sp)
+	sw $a0,4($sp)
+	sw $a1,8($sp)	
 		
 	lw $a1,4($a0)
 	lw $a0,0($a0)
@@ -214,10 +218,10 @@ loop_food:
 	j loop_food_for
 	end_loop_food_for:
 	
-	lw $ra,4($sp)
-	lw $a0,8($sp)
-	lw $a1,12($sp)
-	addi $sp,$sp,16
+	lw $ra,0($sp)
+	lw $a0,4($sp)
+	lw $a1,8($sp)
+	addi $sp,$sp,12
 	
 	jr $ra
 
@@ -344,13 +348,30 @@ mapa:
 	jal loop_food
 	j loop_jogo
 
+#Colide ------------------------------------------------------------------------------------------------------------------------------------------------------------	
+colide:
+	sb $a2,0($a1)
+	sb $a2,5($a1)
+	sb $a2,6($a1)
+	sb $a2,11($a1)
+	sb $a2,3520($a1)
+	sb $a2,1600($a1)
+	sb $a2,1611($a1)
+	sb $a2,1920($a1)
+	sb $a2,1931($a1)
+	sb $a2,3525($a1)
+	sb $a2,3526($a1)
+	sb $a2,3531($a1)
+	jr $ra
+	
 #Pinta Pac ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintapac:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
 	# guarda na pilha registradores preservados que serao utiaddizado,$zeros
-	addi $sp,$sp,-20
-	sw $ra,4($sp)
-	sw $t0,8($sp)
+	subi $sp,$sp,20
+	sw $ra,0($sp)
+	sw $t0,4($sp)
+	sw $a1,16($sp)
 	
 	move $a2,$a0
 	la $a3,5
@@ -361,8 +382,8 @@ pintapac:
 	mflo $a1
 	addi $a0,$a0,6
 	addi $a1,$a1,6
-	sw $a0,12($sp)
-	sw $a1,16($sp)
+	sw $a0,8($sp)
+	sw $a1,12($sp)
 	
 	add $s0,$zero,$zero # y inicial
 	add $s1,$zero,$a3 # x inicial
@@ -430,12 +451,17 @@ circloop:
 		j circloop
 endcirculo:
 	
-	lw $a0,12($sp)
-	lw $a1,16($sp)
+	lw $a0,8($sp)
+	lw $a1,12($sp)
 	jal preenche_pac
+	
+	lw $a1,16($sp)
+	addi $a2,$zero,0xC8
+	jal colide
+	
 	# recuperar da pilha registradores preservados utilizados
-	lw $ra,4($sp)  
-	lw $t0,8($sp)
+	lw $ra,0($sp)  
+	lw $t0,4($sp)
 	addi $sp,$sp,20
 	jr $ra
 
@@ -443,11 +469,12 @@ endcirculo:
 
 boca: 
 	addi $sp,$sp,-12
-	sw $ra,4($sp)
-	sw $t0,8($sp)
+	sw $ra,0($sp)
+	sw $t0,4($sp)
+	sw $a1,8($sp)
 	
 	add $a2,$zero,$zero
-	la $t0,320
+	addi $t0,$zero,320
 	subi $a1,$a1,4278190080
 	div $a1,$t0
 	mfhi $a0
@@ -495,15 +522,20 @@ boca:
 	add $a1,$a1,$v1
 	jal preenche_pac
 	
-	lw $ra,4($sp)
-	lw $t0,8($sp)
+	lw $a1,8($sp)
+	addi $a2,$zero,0xC8
+	jal colide
+	sb $a2,0($a1)
+	
+	lw $ra,0($sp)
+	lw $t0,4($sp)
 	addi $sp,$sp,12
 	jr $ra
 
 #Preenche Pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-preenche_pac:
+preenche_pac: jr $ra
  	# $a0 = x, $a1 = y, $a2 = cor
- 	addi $sp,$sp,-8
+ 	addi $sp,$sp,-4
 	
 	li $t0,0xff000000
 	add $t0,$t0,$a0
@@ -517,12 +549,12 @@ preenche_pac:
 	sw $t0,0($t1)
 	addi $t1,$t1,-4
 	# $t2 inicio da fila,$t1 fim da fila
-bfs:	
+dfs:	
 	beq $t1,$t2,endpreenche 
-		lw $t0,0($t2)
-		addi $t2,$t2,-4
+		addi $t1,$t1,4
+		lw $t0,0($t1)
 		lb $t3,0($t0)
-		beq $t3,$a2,bfs
+		beq $t3,$a2,dfs
 		sb $a2,0($t0)
 			# atualiza o ponteiro da fila
 			addi $t1,$t1,-16
@@ -536,9 +568,9 @@ bfs:
 			addi $t0,$t0,-640
 			sw $t0,4($t1)
 
-		j bfs
+		j dfs
 endpreenche:
-	addi $sp,$sp,8
+	addi $sp,$sp,4
 	jr $ra
 
 #Limpa pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -551,8 +583,8 @@ limpaloop:
 	addi $t7,$t3,12
 limpaloop2:    
 	beq $t3,$t7,sailimpaloop
-	sh $a0,0($t3)
-	addi $t3,$t3,2
+	sb $a0,0($t3)
+	addi $t3,$t3,1
 	j limpaloop2
 sailimpaloop:
 	addi $t3,$t3,308
@@ -575,12 +607,10 @@ prox_pac:
 # Mesmo pac --------------------------------------------------------------
 msm_pac:
 	lw $t1,atpac
-	beq $t1,0,dir
-	lw $t0,players
-	blt $t0,2,loop
-	beq $t1,4,dir2
-	beq $t1,8,dir3
-	beq $t1,12,dir4
+	beq $t1,0,ddir
+	beq $t1,4,ddir2
+	beq $t1,8,ddir3
+	beq $t1,12,ddir4
 
 
 #Erro movimentacao pac -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -589,12 +619,20 @@ erro_dir:
 	lw $t1,0($t1)
 	la $t0,mov_ant
 	add $t0,$t0,$t1
-	lw $t0,0($t0)
-	beq $t0,$t2,prox_pac
-	la $t2,mov
-	add $t2,$t2,$t1	
-	sw $t0,0($t2)
+	lw $t1,0($t0)
+	beq $t1,$t2,prox_pac
+	la $t2,mov_ant
 	j msm_pac
+#Evita colisao -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ve_se_bate:
+	addi $v1,$zero,0
+	lb $a0,0($a2)
+	andi $a0,$a0,0xFF
+	bnez $a0,bate
+	jr $ra
+bate:
+	addi $v1,$zero,1
+	jr $ra
 
 #Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 cima:
@@ -602,12 +640,17 @@ cima:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,-320
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
-	lw $t4,meiaberta
+	
+	addi $a2,$a1,-320
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	addi $a2,$a1,-309
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	
+	lw $t4,meiaberta	
 	bnez $t4,cima2
+	
 	la $t1,mov_ant
 	add $t1,$t1,$t3
 	sw $t2,0($t1)
@@ -635,6 +678,11 @@ cima:
 	jal boca
 	j saicima
 cima2:
+	la $t1,mov_ant
+	lw $t3,atpac
+	add $t1,$t1,$t3
+	sw $t2,0($t1)
+	
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -683,12 +731,17 @@ baixo:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,3840
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a2,$a1,3840
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	addi $a2,$a1,3851
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	
 	lw $t4,meiaberta
 	bnez $t4,baixo2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -717,6 +770,11 @@ baixo:
 	jal boca
 	j saibaixo
 baixo2:
+	la $t1,mov_ant
+	lw $t3,atpac
+	add $t1,$t1,$t3
+	sw $t2,0($t1)
+	
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -765,12 +823,17 @@ esquerda:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,-1
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a2,$a1,-1
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	addi $a2,$a1,3519
+	jal ve_se_bate
+	bnez $v1,erro_dir
+
 	lw $t4,meiaberta
 	bnez $t4,esquerda2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -800,6 +863,10 @@ esquerda:
 	
 	j saiesquerda
 esquerda2:
+	la $t1,mov_ant
+	lw $t3,atpac
+	add $t1,$t1,$t3
+	sw $t2,0($t1)
 	
 	la $t0,pac_position
 	lw $t3,atpac
@@ -849,12 +916,17 @@ direita:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
-	addi $t1,$a1,12
-	lb $t1,0($t1)
-	andi $t1,$t1,0xFF
-	beq $t1,0xC0,erro_dir
+	
+	addi $a2,$a1,12
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	addi $a2,$a1,3532
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	
 	lw $t4,meiaberta
 	bnez $t4,direita2
+	
 	la $t1,mov_ant
 	lw $t3,atpac
 	add $t1,$t1,$t3
@@ -884,6 +956,11 @@ direita:
 	j saidireita
 	
 direita2:
+	la $t1,mov_ant
+	lw $t3,atpac
+	add $t1,$t1,$t3
+	sw $t2,0($t1)
+
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
@@ -1011,7 +1088,7 @@ loop_jogo:
 	addi $a1,$a1,71344
 	la $t1,pac_position
 	sw $a1,12($t1)
-	addi $a0,$zero,0x04
+	addi $a0,$zero,0x1C
 	jal pintapac	
 loop:
 	la $t0,meiaberta
@@ -1019,19 +1096,18 @@ loop:
 	xori $t1,$t1,1
 	sw $t1,0($t0)
 	la $t1,0xFFFF0100
+	lb $t2,0($t1)       # Tecla lida
+	jal tecla
+	
 	la $t0,velocidade
-	lw $t0,0($t0)
-	addi $a0,$zero,1
-	addi $v0,$zero,32
-	#sw $zero,0($zero)
+	lw $a0,0($t0)
+	
 	li $t5,0xFFFF050C
 	lw $t0,0($t5)
-	addi $t0,$t0,80
+	add $t0,$t0,$a0
 	lw $t4,0($t5)
 ler:	
 	blt $t4,$zero,dir
-		lb $t2,0($t1)       # Tecla lida
-		jal tecla
 		lw $t4,0($t5)
 		sub $t4,$t0,$t4
 		#syscall
@@ -1044,9 +1120,6 @@ dir:
 	addi $t1,$zero,0x77
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir
-	la $t2,mov_ant
 ddir:	
 	lw $t2,0($t2)
 
@@ -1055,15 +1128,9 @@ ddir:
 	beq $t2,0x23,direita	# direita - d
 	beq $t2,0x1C,esquerda	# esquerda - a
 	
-	la $t0,mov_ant
-	lw $t0,0($t0)
-	bne $t0,$t2,dirr
-	lw $t0,players
-	blt $t0,2,loop
-	j dir2
-dirr:
-	addi $t2,$t0,0
-	j dir
+	lw $t1,players
+	blt $t1,2,loop
+	
 dir2:	
 	la $t2,atpac
 	addi $t1,$zero,4
@@ -1072,9 +1139,6 @@ dir2:
 	addi $t1,$zero,0x07
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir2
-	la $t2,mov_ant
 ddir2:	
 	lw $t2,4($t2)
 	
@@ -1083,15 +1147,9 @@ ddir2:
 	beq $t2,0x4b,direita	# direita - l
 	beq $t2,0x3b,esquerda	# esquerda - j
 	
-	la $t0,mov_ant
-	lw $t0,4($t0)
-	bne $t0,$t2,dirr2
 	lw $t0,players
 	blt $t0,3,loop
-	j dir3
-dirr2:
-	addi $t2,$t0,0
-	j dir2
+	
 dir3:	
 	la $t2,atpac
 	addi $t1,$zero,8
@@ -1100,9 +1158,6 @@ dir3:
 	addi $t1,$zero,0x70
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir3
-	la $t2,mov_ant
 ddir3:	
 	lw $t2,8($t2)
 	
@@ -1111,26 +1166,17 @@ ddir3:
 	beq $t2,0x74,direita	# direita - 6
 	beq $t2,0x6B,esquerda	# esquerda - 4
 	
-	la $t0,mov_ant
-	lw $t0,8($t0)
-	bne $t0,$t2,dirr3
 	lw $t0,players
 	blt $t0,4,loop
-	j dir4
-dirr3:
-	addi $t2,$t0,0
-	j dir3
+	
 dir4:	
 	la $t2,atpac
 	addi $t1,$zero,12
 	sw $t1,0($t2)
 	la $t2,cor
-	addi $t1,$zero,0x04
+	addi $t1,$zero,0x1C
 	sw $t1,0($t2)
 	la $t2,mov
-	lw $t0,meiaberta
-	beqz $t0,ddir4
-	la $t2,mov_ant
 ddir4:	
 	lw $t2,12($t2)
 	
@@ -1139,10 +1185,4 @@ ddir4:
 	beq $t2,0x32,direita	# direita - b
 	beq $t2,0x21,esquerda	# esquerda - c
 	
-	la $t0,mov_ant
-	lw $t0,12($t0)
-	bne $t0,$t2,dirr4
 	j loop
-dirr4:
-	addi $t2,$t0,0
-	j dir4
