@@ -19,7 +19,7 @@
  espelho: .word 1
  
  # Define quantos pac-mans vao ter no jogo (1~4)
- players: .word 4
+ players: .word 3
  velocidade: .word 100
  boca_coord: .word 0,0 , 0,0
  aberta: .word 1,1,1,1
@@ -355,6 +355,9 @@ mapa:
 	j loop_jogo
 
 #Colide ------------------------------------------------------------------------------------------------------------------------------------------------------------	
+# Marca pontos ao redor do pac-man para verificar colisao
+# $a2 = cor
+# $a1 = endereco do pacman
 colide:
 	sb $a2,0($a1)
 	sb $a2,5($a1)
@@ -372,6 +375,9 @@ colide:
 
 		
 #Pinta Pac ------------------------------------------------------------------------------------------------------------------------------------------------------------	
+# Desenha um circulo
+# $a1 = endereco
+# $a0 = cor
 pintapac:
 	addi $t6,$zero,6
 	addi $t3,$a1,0
@@ -409,7 +415,6 @@ aaaa:
 	jr $ra
 
 #Pinta boca ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 boca: 
 	addi $sp,$sp,-12
 	sw $ra,0($sp)
@@ -473,6 +478,11 @@ boca:
 	lw $t0,4($sp)
 	addi $sp,$sp,12
 	jr $ra
+# Altera o estado da boca do ultimo Pac-man movimentado --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# $t0 = endereco (aberta + (nro no pacman)) contendo 1
+muda_boca:
+	sw $zero,0($t0)
+	j prox_pac
 
 #Preenche Pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 preenche_pac:
@@ -514,8 +524,9 @@ dfs:
 endpreenche:
 	addi $sp,$sp,4
 	jr $ra
-
-#Limpa pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Limpa --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Pinta um quadrado preto 12x12
+# $a1 = endereco
 limpa:
 	addi $t6,$zero,12
 	addi $t3,$a1,0
@@ -535,6 +546,7 @@ sailimpaloop:
 
 
 # Proximo pac --------------------------------------------------------------
+# Verifica o proximo pacman e segue para movimentar o proximo
 prox_pac:
 	lw $t1,atpac
 	lw $t0,players
@@ -547,15 +559,17 @@ prox_pac:
 	beq $t1,12,loop
 
 # Mesmo pac --------------------------------------------------------------
+# Verifica o proximo pacman e tenta movimenta-lo novamente ( ocorreu erro no movimentacao )
 msm_pac:
 	lw $t1,atpac
-	beq $t1,0,ddir
-	beq $t1,4,ddir2
-	beq $t1,8,ddir3
-	beq $t1,12,ddir4
+	beq $t1,0,movimenta
+	beq $t1,4,movimenta2
+	beq $t1,8,movimenta3
+	beq $t1,12,movimenta4
 
 
 #Erro movimentacao pac -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Movimento atual faria o pac-man colidir, tenta realizar o movimento anterior
 erro_dir:
 	la $t1,atpac
 	lw $t1,0($t1)
@@ -565,7 +579,9 @@ erro_dir:
 	beq $t1,$t2,prox_pac
 	la $t2,mov_ant
 	j msm_pac
-#Evita colisao -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Verifica colisao -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# $a2 = endereco
+# retora $v1 = 0 se nao colidir e outro valor caso contrario 
 ve_se_bate:
 	addi $v1,$zero,0
 	lb $a0,0($a2)
@@ -576,34 +592,68 @@ bate:
 	add $v1,$zero,$a0
 	jr $ra
 
-#Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-cima:
+# Colidi no movimento -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
+mov_colide:
+	sw $ra,-4($sp)
+	
+	add $a2,$a1,$s6
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	add $a2,$a1,$s7
+	jal ve_se_bate
+	bnez $v1,erro_dir
+	
+	lw $ra,-4($sp)
+	jr $ra
+# Movimenta o Pacman  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
+# $a3 = deslocamento que se deseja fazer no pacman
+mexe_pac:
+	addi $sp,$sp,-4
+	sw $ra,0($sp)
+	
 	la $t0,pac_position
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
 	
-	addi $a2,$a1,-320
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	addi $a2,$a1,-309
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	
-	lw $t4,meiaberta	
-	bnez $t4,cima2
-	
+	jal mov_colide
+			
 	la $t1,mov_ant
 	add $t1,$t1,$t3
 	sw $t2,0($t1)
 	jal limpa
 	
-	lw $a1,0($t0)
 	la $a0,cor
 	lw $a0,0($a0)
-	addi $a1,$a1,-1920
+	add $a1,$a1,$a3
 	sw $a1,0($t0)
 	jal pintapac
+	
+	lw $ra,0($sp)
+	addi $sp,$sp,4
+	
+	lw $t4,meiaberta
+	jr $ra	
+sai_mexe_pac:
+	addi $t1,$zero,1
+	sw $t1,0($t0)
+	j prox_pac
+	
+################################################################################################################################################################################################################################################################################################################################
+# As funcoes cima, baixo, esquerda e direita preparam os valores para chamar a funcao mexe_pac
+# para a direcao especifica, os enderecos atpac e cor devem conter os valores correspondentes ao pac que se deseja mover
+		
+#Pac pra cima -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+cima:
+	addi $s6,$zero,-320
+	addi $s7,$zero,-309
+	addi $a3,$zero,-1920
+	
+	jal mexe_pac
+	
+	bnez $t4,cima2
 	
 	lw $a1,0($t0)
 	addi $s0,$zero,6
@@ -616,34 +666,17 @@ cima:
 	addi $s7,$zero,4
 	addi $v0,$zero,0
 	addi $v1,$zero,-2
-
-
 	jal boca
-	j saicima
+	
+	j prox_pac
 cima2:
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
-	jal limpa
-	
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,-1920
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	la $t0,aberta
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $t1,0($t0)
-	beq $t1,$zero,saicima2
+	beq $t1,$zero,sai_mexe_pac
 	
 	addi $s0,$zero,6
 	addi $s1,$zero,5
@@ -657,46 +690,17 @@ cima2:
 	addi $v1,$zero,-2
 	
 	jal boca
-	la $t0,aberta
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	sw $zero,0($t0)
-	j saicima
-saicima2:
-	addi $t1,$zero,1
-	sw $t1,0($t0)
-saicima:
-	j prox_pac
+	j muda_boca
 
 #Pac pra baixo -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 baixo:
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
+	addi $s6,$zero,3840
+	addi $s7,$zero,3851
+	addi $a3,$zero,1920
 	
-	addi $a2,$a1,3840
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	addi $a2,$a1,3851
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	
-	lw $t4,meiaberta
+	jal mexe_pac
+
 	bnez $t4,baixo2
-	
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	jal limpa
-	
-	lw $a1,0($t0)
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,1920
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	addi $s0,$zero,6
@@ -709,33 +713,17 @@ baixo:
 	addi $s7,$zero,-4
 	addi $v0,$zero,0
 	addi $v1,$zero,2
-
 	jal boca
-	j saibaixo
+	
+	j prox_pac
 baixo2:
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
-	jal limpa
-	
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,1920
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	la $t0,aberta
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $t1,0($t0)
-	beq $t1,$zero,saibaixo2
+	beq $t1,$zero,sai_mexe_pac
 	
 	addi $s0,$zero,6
 	addi $s1,$zero,7
@@ -749,46 +737,17 @@ baixo2:
 	addi $v1,$zero,2
 	
 	jal boca
-	la $t0,aberta
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	sw $zero,0($t0)
-	j saibaixo
-saibaixo2:
-	addi $t1,$zero,1
-	sw $t1,0($t0)
-saibaixo:
-	j prox_pac
-	
+	j muda_boca
+
 #Pac pra esquerda -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 esquerda:
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
+	addi $s6,$zero,-1
+	addi $s7,$zero,3519
+	addi $a3,$zero,-6
 	
-	addi $a2,$a1,-1
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	addi $a2,$a1,3519
-	jal ve_se_bate
-	bnez $v1,erro_dir
-
-	lw $t4,meiaberta
+	jal mexe_pac
+	
 	bnez $t4,esquerda2
-	
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	jal limpa
-	
-	lw $a1,0($t0)
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,-6
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	addi $s0,$zero,4
@@ -801,34 +760,18 @@ esquerda:
 	addi $s7,$zero,-3
 	addi $v0,$zero,-2
 	addi $v1,$zero,0
-
+	
 	jal boca
 	
-	j saiesquerda
+	j prox_pac
 esquerda2:
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
-	jal limpa
-	
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,-6
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	la $t0,aberta
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $t1,0($t0)
-	beq $t1,$zero,saiesquerda2
+	beq $t1,$zero,sai_mexe_pac
 	
 	addi $s0,$zero,4
 	addi $s1,$zero,6
@@ -842,46 +785,17 @@ esquerda2:
 	addi $v1,$zero,0
 	
 	jal boca
-	la $t0,aberta
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	sw $zero,0($t0)
-	j saiesquerda
-saiesquerda2:
-	addi $t1,$zero,1
-	sw $t1,0($t0)
-saiesquerda:	
-	j prox_pac
+	j muda_boca
 
 #Pac pra direita -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 direita:
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
+	addi $s6,$zero,12
+	addi $s7,$zero,3532
+	addi $a3,$zero,6
 	
-	addi $a2,$a1,12
-	jal ve_se_bate
-	bnez $v1,erro_dir
-	addi $a2,$a1,3532
-	jal ve_se_bate
-	bnez $v1,erro_dir
+	jal mexe_pac
 	
-	lw $t4,meiaberta
 	bnez $t4,direita2
-	
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-	jal limpa
-	
-	lw $a1,0($t0)
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,6
-	sw $a1,0($t0)
-	jal pintapac
 	
 	lw $a1,0($t0)
 	addi $s0,$zero,7
@@ -894,35 +808,19 @@ direita:
 	addi $s7,$zero,-3
 	addi $v0,$zero,2
 	addi $v1,$zero,0
-
+	
 	jal boca
-	j saidireita
 	
+	j prox_pac
 direita2:
-	la $t1,mov_ant
-	lw $t3,atpac
-	add $t1,$t1,$t3
-	sw $t2,0($t1)
-
-	la $t0,pac_position
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	lw $a1,0($t0)
-	jal limpa
 	
-	la $a0,cor
-	lw $a0,0($a0)
-	addi $a1,$a1,6
-	sw $a1,0($t0)
-	jal pintapac
-
 	lw $a1,0($t0)
 	la $t0,aberta
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $t1,0($t0)
-	beq $t1,$zero,saidireita2
-
+	beq $t1,$zero,sai_mexe_pac
+	
 	addi $s0,$zero,7
 	addi $s1,$zero,6
 	addi $s2,$zero,4
@@ -933,19 +831,11 @@ direita2:
 	addi $s7,$zero,-6
 	addi $v0,$zero,2
 	addi $v1,$zero,0
-
-	jal boca
-	la $t0,aberta
-	lw $t3,atpac
-	add $t0,$t0,$t3
-	sw $zero,0($t0)
-	j saidireita
-saidireita2:
-	addi $t1,$zero,1
-	sw $t1,0($t0)
-saidireita:	
-	j prox_pac
 	
+	jal boca
+	j muda_boca
+################################################################################################################################################################################################################################################################################################################################
+		
 #Pinta fantasma ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintag:
 	addi $t6,$zero,12
@@ -1073,22 +963,25 @@ teclap4:
 	j sai_tecla
 
 tecla:	
-	# Pac-man 1
+	# Pac-man amarelo
 	beq $t2,119,teclap1	# cima - w
 	beq $t2,115,teclap1	# baixo - s
 	beq $t2,100,teclap1	# direita - d
 	beq $t2,97,teclap1	# esquerda - a
 	
+	# Pac-man vermelho
 	beq $t2,105,teclap2	# cima - i
 	beq $t2,106,teclap2	# baixo - k
 	beq $t2,107,teclap2	# direita - l
 	beq $t2,108,teclap2	# esquerda - j
 	
+	# Pac-man verde
 	beq $t2,56,teclap3	# cima - 8
 	beq $t2,53,teclap3	# baixo - 5
 	beq $t2,54,teclap3	# direita - 6
 	beq $t2,52,teclap3	# esquerda - 4
 
+	# Pac-man marrom
 	beq $t2,102,teclap4	# cima - f
 	beq $t2,118,teclap4	# baixo - v
 	beq $t2,98,teclap4	# direita - b
@@ -1100,6 +993,17 @@ sai_tecla:
 loop_jogo:
 	la $t0,espelho
 	sw $zero,0($t0)
+	
+	# Pinta o fantasma vermelho dentro da prisao
+	la $t0,baseadd
+	lw $a1,0($t0)
+	addi $a1,$a1,36628 
+	la $t1,g_position
+	sw $a1,0($t1)
+	addi $a0,$zero,0x0f
+	jal pintag	
+	
+	# Pinta o pac amarelo em sua posicao inicial, $a1 = endereco, $a0 = cor
 	la $t0,baseadd
 	lw $a1,0($t0)
 	addi $a1,$a1,1924
@@ -1107,10 +1011,12 @@ loop_jogo:
 	sw $a1,0($t1)
 	addi $a0,$zero,0x77
 	jal pintapac
-	
+		
+	# Inicia o jogo caso exista somente um jogador
 	lw $t0,players
 	blt $t0,2,loop
 	
+	# Pinta o pac vermelho em sua posicao inicial, $a1 = endereco, $a0 = cor
 	la $t0,baseadd
 	lw $a1,0($t0)
 	addi $a1,$a1,2224
@@ -1122,6 +1028,7 @@ loop_jogo:
 	lw $t0,players
 	blt $t0,3,loop
 	
+	# Pinta o pac verde em sua posicao inicial, $a1 = endereco, $a0 = cor
 	la $t0,baseadd
 	lw $a1,0($t0)
 	addi $a1,$a1,71044
@@ -1133,6 +1040,7 @@ loop_jogo:
 	lw $t0,players
 	blt $t0,4,loop
 	
+	# Pinta o pac marrom em sua posicao inicial, $a1 = endereco, $a0 = cor
 	la $t0,baseadd
 	lw $a1,0($t0)
 	addi $a1,$a1,71344
@@ -1141,14 +1049,9 @@ loop_jogo:
 	addi $a0,$zero,0x1C
 	jal pintapac
 	
-	la $t0,baseadd
-	lw $a1,0($t0)
-	addi $a1,$a1,36628 
-	la $t1,g_position
-	sw $a1,0($t1)
-	addi $a0,$zero,0x0f
-	jal pintag		
 loop:	
+	# Verifica se o fantasma vermelho esta preso, subtrai em 1 o tempo caso esteja, valor em preso > 0
+	# e o movimenta caso contrario.
 	lw $t1,preso
 	la $t0,g_position
 	la $t2,mov_antg
@@ -1166,20 +1069,27 @@ solta1:
 	sw $a1,0($t0)
 	jal busca_fantasma
 fica_preso1:
-
+	
+	# Altera o valor de meiaberta
 	la $t0,meiaberta
 	lw $t1,0($t0)
 	xori $t1,$t1,1
 	sw $t1,0($t0)
+	
+	# Le a tecla do buffer e atualiza o movimento que sera feito pelos pacs
 	la $t1,0xFF100000
+	lb $t2,4($t1)       # Tecla lida
+	jal tecla
+	
+	# Sleep de tempo definido em velociade
 	la $t0,velocidade
 	lw $a0,0($t0)
 	addi $v0,$zero,32
-ler:	
-	lb $t2,4($t1)       # Tecla lida
-	jal tecla
-	addi $t0,$t0,-1
 	syscall
+	
+	# Prepara os valores para movimentar o pac amarelo
+	# $t2 = endereco da tecla que indica a direcao
+	# atualiza atpac para 0
 dir:
 	la $t2,atpac
 	addi $t1,$zero,0
@@ -1188,7 +1098,9 @@ dir:
 	addi $t1,$zero,0x77
 	sw $t1,0($t2)
 	la $t2,mov
-ddir:	
+	
+	# Verifica a direcao indicada por $t2 e realiza o movimento para o pacman amarelo
+movimenta:	
 	lw $t2,0($t2)
 
 	beq $t2,119,cima
@@ -1207,7 +1119,7 @@ dir2:
 	addi $t1,$zero,0x07
 	sw $t1,0($t2)
 	la $t2,mov
-ddir2:	
+movimenta2:	
 	lw $t2,4($t2)
 	
 	beq $t2,105,cima
@@ -1226,7 +1138,7 @@ dir3:
 	addi $t1,$zero,0x70
 	sw $t1,0($t2)
 	la $t2,mov
-ddir3:	
+movimenta3:	
 	lw $t2,8($t2)
 	
 	beq $t2,56,cima
@@ -1245,7 +1157,7 @@ dir4:
 	addi $t1,$zero,0x1C
 	sw $t1,0($t2)
 	la $t2,mov
-ddir4:	
+movimenta4:	
 	lw $t2,12($t2)
 	
 	beq $t2,102,cima
