@@ -653,5 +653,8 @@ cMain:
 
 
  sai:
+ 
+ 	la $a0, BUTAO
+ 	jal FLAG
  	li $v0,10
 	syscall
