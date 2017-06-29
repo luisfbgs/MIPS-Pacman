@@ -14,8 +14,8 @@
  coordinates11: .word 166,174 , 88,174 , 88,185 , 148,185 , 148,221 , 166,221
  coordinates12: .word 16,198 , 51,198 , 51,221 , 16,221 , 16,198
  coordinates13: .word 64,198 , 135,198 , 135,221 , 64,221 , 64,198
- food_coordinate1: .word 9,22 , 57,22 , 141,22 , 81,46 , 9,166 , 141,190 , 57,202
- food_coordinate2: .word 9,11 , 9,46 , 9,70 , 9,166 , 9,190 , 9,226 , 93,70
+ food_coordinate1: .word 9,23 , 57,23 , 141,23 , 81,47 , 9,167 , 141,191 , 57,203
+ food_coordinate2: .word 9,11 , 9,47 , 9,71 , 9,167 , 9,191 , 9,227 , 93,71
  espelho: .word 1
  
  # Define quantos pac-mans vao ter no jogo (1~4)
