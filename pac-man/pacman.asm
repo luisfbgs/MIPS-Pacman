@@ -1129,3 +1129,4 @@ movimenta4:
 	beq $t2,99,esquerda
 	
 	j loop
+ 
