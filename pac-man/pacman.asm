@@ -415,68 +415,83 @@ aaaa:
 	jr $ra
 
 #Pinta boca ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-boca: 
-	addi $sp,$sp,-12
-	sw $ra,0($sp)
-	sw $t0,4($sp)
-	sw $a1,8($sp)
-	
-	add $a2,$zero,$zero
-	addi $t0,$zero,320
-	subi $a1,$a1,4278190080
-	div $a1,$t0
-	mfhi $a0
-	mflo $a1
-	add $a0,$a0,$s0
-	add $a1,$a1,$s1
-	
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	add $a0,$a0,$s2
-	add $a1,$a1,$s3
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)	
+# $a1 = endereco do pacman
+# $a2 = 0 pra direita e 2 pra esquerda
+# s0 = 0 para boca pequena 1 para boca grande
 
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	add $a0,$a0,$s4
-	add $a1,$a1,$s5
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-				
-	la $s1,boca_coord
-	sw $a0,0($s1)
-	sw $a1,4,($s1)
-	add $a0,$a0,$s6
-	add $a1,$a1,$s7
-	sw $a0,8($s1)
-	sw $a1,12,($s1)
-	move $a0,$s1
-	jal funcao_reta
-	
-	lw $a0,8($s1)
-	lw $a1,12($s1)
-	add $a0,$a0,$v0
-	add $a1,$a1,$v1
-	jal preenche_pac
-	
-	lw $a1,8($sp)
+boca: 
+	addi $t2,$zero,0
+	addi $t1,$zero,1600
+	beqz $s0,boca_cheia
+	addi $t1,$zero,960
+boca_cheia:
+	addi $t3,$a1,325
+	sra $a3,$a2,1
+	sub $t3,$t3,$a3
+	addi $t6,$zero,6
+pinta_boca:
+	addi $t7,$t3,3200
+	srlv $t8,$t1,$t2
+	add $t3,$t3,$t8
+	sub $t7,$t7,$t8
+loop_boca:
+	beq $t3,$t7,sai_loop_boca
+	sb $zero,0($t3)
+	addi $t3,$t3,320
+	j loop_boca
+sai_loop_boca:	
+	addi $t3,$t3,-3199
+	add $t3,$t3,$a2
+	add $t3,$t3,$t8
+	addi $t6,$t6,-1
+	beqz $t1, j_loop_boca
+	addi $t1,$t1,-320
+j_loop_boca:
+	bnez $t6,pinta_boca
+
+	sw $ra,-4($sp)
 	addi $a2,$zero,0x01
 	jal colide
-	
-	lw $ra,0($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp,12
+	lw $ra,-4($sp)	
+	jr $ra
+#Pinta boca 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# $a1 = endereco do pacman
+# $a2 = 0 pra cima e 2 pra baixo
+# s0 = 0 para boca pequena 1 para boca grande
+boca2: 
+	addi $t2,$zero,0
+	addi $t1,$zero,5
+	beqz $s0,boca_cheia2
+	addi $t1,$zero,3
+boca_cheia2:
+	addi $t3,$a1,1921
+	sra $a3,$a2,1
+	sub $t3,$t3,$a3
+	addi $t6,$zero,6
+pinta_boca2:
+	addi $t7,$t3,10
+	srl $t8,$t1,0
+	add $t3,$t3,$t8
+	sub $t7,$t7,$t8
+loop_boca2:
+	beq $t3,$t7,sai_loop_boca2
+	sb $zero,0($t3)
+	addi $t3,$t3,1
+	j loop_boca2
+sai_loop_boca2:	
+	addi $t3,$t3,-330
+	add $t3,$t3,$a2
+	add $t3,$t3,$t8
+	addi $t6,$t6,-1
+	beqz $t1, j_loop_boca2
+	addi $t1,$t1,-1
+j_loop_boca2:
+	bnez $t6,pinta_boca2
+
+	sw $ra,-4($sp)
+	addi $a2,$zero,0x01
+	jal colide
+	lw $ra,-4($sp)	
 	jr $ra
 # Altera o estado da boca do ultimo Pac-man movimentado --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $t0 = endereco (aberta + (nro no pacman)) contendo 1
@@ -484,46 +499,6 @@ muda_boca:
 	sw $zero,0($t0)
 	j prox_pac
 
-#Preenche Pac --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-preenche_pac:
- 	# $a0 = x, $a1 = y, $a2 = cor
- 	addi $sp,$sp,-4
-	
-	li $t0,0xff000000
-	add $t0,$t0,$a0
-	addi $at,$zero,320
-	mult $a1,$at
-	mflo $a1
-	add $t0,$t0,$a1
-	
-	move $t1,$sp
-	move $t2,$t1
-	sw $t0,0($t1)
-	addi $t1,$t1,-4
-	# $t2 inicio da fila,$t1 fim da fila
-dfs:	
-	beq $t1,$t2,endpreenche 
-		addi $t1,$t1,4
-		lw $t0,0($t1)
-		lb $t3,0($t0)
-		beq $t3,$a2,dfs
-		sb $a2,0($t0)
-			# atualiza o ponteiro da fila
-			addi $t1,$t1,-16
-			# coloca na fila os enderecos adjacentes a $t0
-			addi $t0,$t0,1
-			sw $t0,16($t1)
-			addi $t0,$t0,-2
-			sw $t0,12($t1)
-			addi $t0,$t0,321
-			sw $t0,8($t1)
-			addi $t0,$t0,-640
-			sw $t0,4($t1)
-
-		j dfs
-endpreenche:
-	addi $sp,$sp,4
-	jr $ra
 #Limpa --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Pinta um quadrado preto 12x12
 # $a1 = endereco
@@ -656,17 +631,10 @@ cima:
 	bnez $t4,cima2
 	
 	lw $a1,0($t0)
-	addi $s0,$zero,6
-	addi $s1,$zero,5
-	addi $s2,$zero,-3
-	addi $s3,$zero,-4
-	addi $s4,$zero,6
-	addi $s5,$zero,0
-	addi $s6,$zero,-3
-	addi $s7,$zero,4
-	addi $v0,$zero,0
-	addi $v1,$zero,-2
-	jal boca
+	addi $s0,$zero,0
+	addi $a2,$zero,0
+	
+	jal boca2
 	
 	j prox_pac
 cima2:
@@ -678,18 +646,10 @@ cima2:
 	lw $t1,0($t0)
 	beq $t1,$zero,sai_mexe_pac
 	
-	addi $s0,$zero,6
-	addi $s1,$zero,5
-	addi $s2,$zero,-6
-	addi $s3,$zero,-4
-	addi $s4,$zero,11
-	addi $s5,$zero,0
-	addi $s6,$zero,-6
-	addi $s7,$zero,4
-	addi $v0,$zero,0
-	addi $v1,$zero,-2
+	addi $s0,$zero,1
+	addi $a2,$zero,0
 	
-	jal boca
+	jal boca2
 	j muda_boca
 
 #Pac pra baixo -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -703,17 +663,10 @@ baixo:
 	bnez $t4,baixo2
 	
 	lw $a1,0($t0)
-	addi $s0,$zero,6
-	addi $s1,$zero,7
-	addi $s2,$zero,-3
-	addi $s3,$zero,4
-	addi $s4,$zero,6
-	addi $s5,$zero,0
-	addi $s6,$zero,-3
-	addi $s7,$zero,-4
-	addi $v0,$zero,0
-	addi $v1,$zero,2
-	jal boca
+	addi $s0,$zero,0
+	addi $a2,$zero,640
+	
+	jal boca2
 	
 	j prox_pac
 baixo2:
@@ -725,18 +678,11 @@ baixo2:
 	lw $t1,0($t0)
 	beq $t1,$zero,sai_mexe_pac
 	
-	addi $s0,$zero,6
-	addi $s1,$zero,7
-	addi $s2,$zero,-6
-	addi $s3,$zero,4
-	addi $s4,$zero,11
-	addi $s5,$zero,0
-	addi $s6,$zero,-6
-	addi $s7,$zero,-4
-	addi $v0,$zero,0
-	addi $v1,$zero,2
+	addi $s0,$zero,1
+	addi $a2,$zero,640
 	
-	jal boca
+	jal boca2
+	
 	j muda_boca
 
 #Pac pra esquerda -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -750,16 +696,8 @@ esquerda:
 	bnez $t4,esquerda2
 	
 	lw $a1,0($t0)
-	addi $s0,$zero,4
-	addi $s1,$zero,6
-	addi $s2,$zero,-4
-	addi $s3,$zero,-4
-	addi $s4,$zero,0
-	addi $s5,$zero,6
-	addi $s6,$zero,4
-	addi $s7,$zero,-3
-	addi $v0,$zero,-2
-	addi $v1,$zero,0
+	addi $s0,$zero,0
+	addi $a2,$zero,-2		
 	
 	jal boca
 	
@@ -773,16 +711,8 @@ esquerda2:
 	lw $t1,0($t0)
 	beq $t1,$zero,sai_mexe_pac
 	
-	addi $s0,$zero,4
-	addi $s1,$zero,6
-	addi $s2,$zero,-4
-	addi $s3,$zero,-6
-	addi $s4,$zero,0
-	addi $s5,$zero,11
-	addi $s6,$zero,4
-	addi $s7,$zero,-6
-	addi $v0,$zero,-2
-	addi $v1,$zero,0
+	addi $s0,$zero,1
+	addi $a2,$zero,-2
 	
 	jal boca
 	j muda_boca
@@ -798,17 +728,9 @@ direita:
 	bnez $t4,direita2
 	
 	lw $a1,0($t0)
-	addi $s0,$zero,7
-	addi $s1,$zero,6
-	addi $s2,$zero,4
-	addi $s3,$zero,-3
-	addi $s4,$zero,0
-	addi $s5,$zero,6
-	addi $s6,$zero,-4
-	addi $s7,$zero,-3
-	addi $v0,$zero,2
-	addi $v1,$zero,0
-	
+	addi $s0,$zero,0
+	addi $a2,$zero,0
+		
 	jal boca
 	
 	j prox_pac
@@ -821,42 +743,46 @@ direita2:
 	lw $t1,0($t0)
 	beq $t1,$zero,sai_mexe_pac
 	
-	addi $s0,$zero,7
-	addi $s1,$zero,6
-	addi $s2,$zero,4
-	addi $s3,$zero,-6
-	addi $s4,$zero,0
-	addi $s5,$zero,11
-	addi $s6,$zero,-4
-	addi $s7,$zero,-6
-	addi $v0,$zero,2
-	addi $v1,$zero,0
-	
+	addi $s0,$zero,1
+	addi $a2,$zero,0
+		
 	jal boca
 	j muda_boca
 ################################################################################################################################################################################################################################################################################################################################
 		
 #Pinta fantasma ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintag:
-	addi $t6,$zero,12
-	addi $t3,$a1,0
+	addi $t6,$zero,10
+	addi $t3,$a1,321
+	addi $t5,$zero,6
 pinta_gloop:
 	addi $t6,$t6,-1
-	addi $t7,$t3,12
+	addi $t7,$t3,10
+	srl $t8,$t5,1
+	add $t3,$t3,$t8
+	sub $t7,$t7,$t8
 pinta_gloop2:    
 	beq $t3,$t7,saipinta_gloop
 	sb $a0,0($t3)
 	addi $t3,$t3,1
 	j pinta_gloop2
 saipinta_gloop:
-	addi $t3,$t3,308
+	addi $t3,$t3,310
+	add $t3,$t3,$t8
+	beqz $t5,j_pinta_gloop
+	addi $t5,$t5,-1
+j_pinta_gloop:
 	bne $t6,$zero,pinta_gloop
 	
 	sw $ra,-4($sp)
 	addi $a2,$zero,0x02
 	jal colide
 	lw $ra,-4($sp)
-
+	
+	addi $t3,$a1,964
+	sb $zero,0($t3)
+	sb $zero,3($t3)
+	
 	jr $ra
 
 # Movimento do fantasma ------------------------------------------------------------------------------------------------------------------
