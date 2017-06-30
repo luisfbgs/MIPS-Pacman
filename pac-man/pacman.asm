@@ -743,7 +743,7 @@ direita2:
 	jal boca
 	j muda_boca
 ################################################################################################################################################################################################################################################################################################################################
-		
+#$a1 = endereco, $a0 = cor
 #Pinta fantasma ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintag:
 	addi $t6,$zero,10
@@ -780,14 +780,16 @@ j_pinta_gloop:
 	jr $ra
 
 # Movimento do fantasma ------------------------------------------------------------------------------------------------------------------
+# $t0 = endereco onde fica a posicao do fantasma
+# $t2 = endereco onde fica o ultimo movimento do fantasma
+# $a0 = posicao do pac a perseguir
+# $a3 = cor do fantasma
 busca_fantasma:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
 	
-	lw $a1,0($t0)
-	jal limpa
 	
-	lw $t3, pac_position
+	move $t3, $a0
 	subi $t3, $t3, 0xff000000
 	addi $t6, $0, 320
 	div $t4, $t3, $t6
@@ -796,7 +798,7 @@ busca_fantasma:
 	sub $t3, $t3, $t6
 	# $t3 = x, $t4 = y do pacman
 	
-	lw $t8, g_position
+	lw $t8, 0($t0)
 	subi $t8, $t8, 0xff000000
 	addi $t6, $0, 320
 	div $t5, $t8, $t6
@@ -809,9 +811,11 @@ busca_fantasma:
 	# $t9 = y_ghost - y_pac
 	sub $t8, $t7, $t3
 	sub $t9, $t5, $t4
-	
 	abs $t6, $t8
 	abs $t7 ,$t9
+	
+
+	lw $a1, 0($t0)
 	# if abs($t8) > abs($t9) movimento horizontal
 	ble $t6, $t7, vertical_mov
 		# $t8 > 0 significa que o fantasma esta a direita do pac
@@ -833,6 +837,7 @@ busca_fantasma:
 	jal ve_se_bate
 	bnez $v1,cimag
 	
+	jal limpa	
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -851,6 +856,7 @@ cimag:
 	jal ve_se_bate
 	bnez $v1,esquerdag
 	
+	jal limpa	
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -869,6 +875,7 @@ baixog:
 	jal ve_se_bate
 	bnez $v1,direitag
 	
+	jal limpa	
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -887,6 +894,7 @@ esquerdag:
 	jal ve_se_bate
 	bnez $v1,baixog
 	
+	jal limpa	
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -952,17 +960,23 @@ loop_jogo:
 	sw $zero,0($t0)
 	
 	# Pinta o fantasma vermelho dentro da prisao
-	la $t0,baseadd
-	lw $a1,0($t0)
+	lw $a1,baseadd
 	addi $a1,$a1,36628 
 	la $t1,g_position
 	sw $a1,0($t1)
 	addi $a0,$zero,0x0f
+	jal pintag
+	
+	# Pinta o fantasma verde dentro da prisao
+	lw $a1,baseadd
+	addi $a1,$a1,36640 
+	la $t1,g_position
+	sw $a1,4($t1)
+	addi $a0,$zero,0xc0
 	jal pintag	
 	
 	# Pinta o pac amarelo em sua posicao inicial, $a1 = endereco, $a0 = cor
-	la $t0,baseadd
-	lw $a1,0($t0)
+	lw $a1,baseadd
 	addi $a1,$a1,1924
 	la $t1,pac_position
 	sw $a1,0($t1)
@@ -974,8 +988,7 @@ loop_jogo:
 	blt $t0,2,loop
 	
 	# Pinta o pac vermelho em sua posicao inicial, $a1 = endereco, $a0 = cor
-	la $t0,baseadd
-	lw $a1,0($t0)
+	lw $a1,baseadd
 	addi $a1,$a1,2224
 	la $t1,pac_position
 	sw $a1,4($t1)
@@ -986,8 +999,7 @@ loop_jogo:
 	blt $t0,3,loop
 	
 	# Pinta o pac verde em sua posicao inicial, $a1 = endereco, $a0 = cor
-	la $t0,baseadd
-	lw $a1,0($t0)
+	lw $a1,baseadd
 	addi $a1,$a1,71044
 	la $t1,pac_position
 	sw $a1,8($t1)
@@ -998,8 +1010,7 @@ loop_jogo:
 	blt $t0,4,loop
 	
 	# Pinta o pac marrom em sua posicao inicial, $a1 = endereco, $a0 = cor
-	la $t0,baseadd
-	lw $a1,0($t0)
+	lw $a1,baseadd
 	addi $a1,$a1,71344
 	la $t1,pac_position
 	sw $a1,12($t1)
@@ -1014,17 +1025,50 @@ loop:
 	la $t2,mov_antg
 	addi $a3,$zero,0x0f
 	bgtz $t1,solta1
+	
+	#movimento fantasma vermelho
+	lw $a0, pac_position
+	addi $a3, $zero, 0x07
+	jal busca_fantasma
+	
+	#movimento fantasma verde
+	la $a0, pac_position
+	lw $a0, 4($a0)
+	la $t0,g_position
+	addi $t0, $t0, 4
+	addi $t2, $t2, 4
+	addi $a3, $zero, 0xc0
 	jal busca_fantasma
 solta1:	
 	addi $t1,$t1,-1
 	sw $t1,preso
 	bnez $t1,fica_preso1
+	
+	# movimento fantasma vermelho
 	lw $a1,0($t0)
 	jal limpa
 	lw $a1,baseadd
 	addi $a1,$a1,28948
+	lw $a0, pac_position
+	sw $a1,0($t0)
+	addi $a3, $zero, 0x07
+	jal busca_fantasma
+	
+	# movimento fantasma verde
+	lw $a1,4($t0)
+	jal limpa
+	lw $a1,baseadd
+	addi $a1,$a1,28954
+	la $a0, pac_position
+	lw $a0, 4($a0)
+	la $t0,g_position
+	la $t2,mov_antg
+	addi $t0, $t0, 4
+	addi $t2, $t2, 4
+	addi $a3, $zero, 0xc0
 	sw $a1,0($t0)
 	jal busca_fantasma
+	
 fica_preso1:
 	
 	# Altera o valor de meiaberta
