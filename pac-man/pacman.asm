@@ -823,7 +823,7 @@ busca_fantasma:
 		bgtz $t9, cimag
 		j baixog
 	
-	direitag:
+	direitag: 
 	lw $t3, 0($t2)
 	beq $t3, 1, cimag
 	addi $a2,$a1,12
