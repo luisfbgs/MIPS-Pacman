@@ -19,7 +19,7 @@
  espelho: .word 1
  
  # Define quantos pac-mans vao ter no jogo (1~4)
- players: .word 1
+ players: .word 4
  velocidade: .word 100
  boca_coord: .word 0,0 , 0,0
  aberta: .word 1,1,1,1
@@ -449,11 +449,8 @@ sai_loop_boca:
 j_loop_boca:
 	bnez $t6,pinta_boca
 
-	sw $ra,-4($sp)
 	addi $a2,$zero,0x01
-	jal colide
-	lw $ra,-4($sp)	
-	jr $ra
+	j colide
 #Pinta boca 2 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $a1 = endereco do pacman
 # $a2 = 0 pra cima e 2 pra baixo
@@ -488,11 +485,8 @@ sai_loop_boca2:
 j_loop_boca2:
 	bnez $t6,pinta_boca2
 
-	sw $ra,-4($sp)
 	addi $a2,$zero,0x01
-	jal colide
-	lw $ra,-4($sp)	
-	jr $ra
+	j colide
 # Altera o estado da boca do ultimo Pac-man movimentado --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $t0 = endereco (aberta + (nro no pacman)) contendo 1
 muda_boca:
@@ -1129,4 +1123,3 @@ movimenta4:
 	beq $t2,99,esquerda
 	
 	j loop
- 
