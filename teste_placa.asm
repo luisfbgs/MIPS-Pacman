@@ -310,153 +310,6 @@ op_mthi_mtlo:
 	j acertor
 	jr $ra	
 	
-op_muls: 
-	l.s $f0,in3																																																					
-	l.s $f1,in4	
-	l.s $f2,cpmuls		#f2 = 6
-	li $a0,24
-	
-	mul.s $f0,$f0,$f1
-	
-	c.eq.s $f0,$f2
-	bc1f error
-	j acertor
-	
-	jr $ra	
-	
-op_adds:
-	l.s $f0,in3																																																					
-	l.s $f1,in4	
-	l.s $f2,cpadds	
-	li $a0,25
-	
-	add.s $f0,$f0,$f1
-	
-	c.eq.s $f0,$f2
-	bc1f error
-	j acertor
-	
-	jr $ra			
-
-op_subs:
-	l.s $f0,in3
-	l.s $f1,in4
-	l.s $f2,cpsubs
-	li $a0,26
-	
-	sub.s $f0,$f1,$f0
-	
-	c.eq.s $f0,$f2
-	bc1f error
-	j acertor
-	
-	jr $ra
-
-op_divs:
-	l.s $f0,in5
-	l.s $f1,in4
-	li $a0,27
-	
-	div.s $f1,$f1,$f0
-	
-	c.eq.s $f0,$f1
-	bc1f error
-	j acertor
-	
-	jr $ra
-
-op_sqrt:
-	l.s $f0,in5
-	l.s $f1,in4
-	li $a0,28
-	
-	sqrt.s $f1,$f1
-	
-	c.eq.s $f1,$f0
-	bc1f error
-	j acertor
-	
-	jr $ra
-
-op_abs:
-	l.s $f0,in5
-	l.s $f1,in6
-	li $a0,29
-	
-	abs.s $f1,$f1
-	
-	c.eq.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-	
-op_neg:
-	l.s $f0,in5
-	l.s $f1,in6
-	li $a0,30
-	
-	neg.s $f0,$f0
-	
-	c.eq.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-	
-op_ceq:
-	l.s $f0,in5
-	l.s $f1,in5
-	li $a0,31
-
-	c.eq.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-	
-op_clt:
-	l.s $f0,in4
-	l.s $f1,in5
-	li $a0,32
-
-	c.lt.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-
-op_cle:
-	l.s $f0,in4
-	l.s $f1,in5
-	li $a0,33
-
-	c.le.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-	
-op_cvtsw:
-	l.s $f0,in5
-	lw $t0,in2
-	cvt.w.s $f1,$f0
-	mfc1 $t1,$f1
-	li $a0,34
-
-	beq $t1,$t0,sai
-	j error 
-sai:
-	j acertor
-	jr $ra
-
-op_cvtws:
-	lw $t0,in2
-	mtc1 $t0,$f1
-	cvt.s.w $f1,$f1
-	l.s $f0,in5
-	li $a0,35
-
-	c.eq.s $f1,$f0
-	bc1f error
-	j acertor
-	jr $ra
-	
 		
 main: 
 	#ULA			#codigo de erro
@@ -478,21 +331,21 @@ main:
 	jal mfhi_mflo		#6/7
 	li $t0,0
 	sw $zero,0($t0)
-	#jal op_sll		#8
+	jal op_sll		#8
 	li $t0,0
-	#sw $zero,0($t0)
-	#jal op_srl		#9
+	sw $zero,0($t0)
+	jal op_srl		#9
 	li $t0,0
-	#sw $zero,0($t0)
+	sw $zero,0($t0)
 	jal op_slt		#10
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sgt		#11
 	li $t0,0
 	sw $zero,0($t0)
-	#jal op_sra		#12
+	jal op_sra		#12
 	li $t0,0
-	#sw $zero,0($t0)
+	sw $zero,0($t0)
 	jal op_srav		#13
 	li $t0,0
 	sw $zero,0($t0)
@@ -520,41 +373,27 @@ main:
 	jal op_mthi_mtlo	#22/23
 	li $t0,0
 	sw $zero,0($t0)
-	
-	#FPULA
-	jal op_muls		#24
+	jal op_multu		#24
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_adds		#25
+	jal op_divu		#25
+	li $t0,0
+	sw $zero,0($t0)	
+	jal op_addu		#26
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_subs		#26
+	jal op_subu		#27
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_divs		#27
+	jal op_andi		#28
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_sqrt		#28
+	jal op_ori		#29
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_abs		#29
+	jal op_xori		#30
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_neg		#30
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_ceq		#31
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_clt		#32
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_cle		#33
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_cvtsw		#34
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_cvtws		#35
+	jal op_addi		#31
 	li $t0,0
 	sw $zero,0($t0)
