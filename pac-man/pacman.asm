@@ -33,6 +33,7 @@
  g_position: .word 0,0,0,0
  mov_antg: .word 0,0,0,0
  preso: .word 50,100,150,200
+ comida: .word 0,0
  
 .text
 
@@ -511,6 +512,25 @@ limpaloop2:
 sailimpaloop:
 	addi $t3,$t3,308
 	bne $t6,$zero,limpaloop
+	
+	addi $t3,$zero,0xFFFFFFFF
+	lb $t7,-314($a1)
+	bne $t7,$t3,prox1
+	sb $t3,6($a1)
+	sb $t3,5($a1)
+prox1:	lb $t7,3846($a1)
+	bne $t7,$t3,prox2
+	sb $t3,3526($a1)
+	sb $t3,3525($a1)
+prox2:	lb $t7,1599($a1)	
+	bne $t7,$t3,prox3
+	sb $t3,1600($a1)
+	sb $t3,1920($a1)
+prox3:	lb $t7,1932($a1)	
+	bne $t7,$t3,prox4
+	sb $t3,1611($a1)
+	sb $t3,1931($a1)
+prox4:
 	jr $ra
 
 
@@ -784,10 +804,10 @@ j_pinta_gloop:
 # $t2 = endereco onde fica o ultimo movimento do fantasma
 # $a0 = posicao do pac a perseguir
 # $a3 = cor do fantasma
+# $v0 = endereco que indica se tinha comida onde o fantasma esta
 busca_fantasma:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
-	
 	
 	move $t3, $a0
 	subi $t3, $t3, 0xff000000
@@ -830,6 +850,8 @@ busca_fantasma:
 	direitag: 
 	lw $t3, 0($t2)
 	beq $t3, 1, cimag
+	addi $t3,$zero,-1
+	sw $t3,0($t2)
 	addi $a2,$a1,12
 	jal ve_se_bate
 	bnez $v1,cimag
@@ -838,6 +860,16 @@ busca_fantasma:
 	bnez $v1,cimag
 	
 	jal limpa	
+	
+	lw $t1,0($v0)
+	beqz $t1,direitag2
+	sb $t1,1605($a1)
+	sb $t1,1925($a1)
+	sw $zero,0($v0)
+direitag2:
+	lb $t1,1932($a1)
+	sw $t1,0($v0)
+
 	addi $a1,$a1,6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -849,6 +881,8 @@ busca_fantasma:
 cimag:	
 	lw $t3, 0($t2)
 	beq $t3, 2, esquerdag
+	addi $t3,$zero,-1
+	sw $t3,0($t2)
 	addi $a2,$a1,-320
 	jal ve_se_bate
 	bnez $v1,esquerdag
@@ -857,6 +891,16 @@ cimag:
 	bnez $v1,esquerdag
 	
 	jal limpa	
+	
+	lw $t1,0($v0)
+	beqz $t1,cimag2
+	sb $t1,1926($a1)
+	sb $t1,1925($a1)
+	sw $zero,0($v0)
+cimag2:
+	lb $t1,-314($a1)
+	sw $t1,0($v0)
+	
 	addi $a1,$a1,-1920
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -868,6 +912,8 @@ cimag:
 baixog:	
 	lw $t3, 0($t2)
 	beq $t3, 3, direitag
+	addi $t3,$zero,-1
+	sw $t3,0($t2)
 	addi $a2,$a1,3840
 	jal ve_se_bate
 	bnez $v1,direitag
@@ -876,6 +922,16 @@ baixog:
 	bnez $v1,direitag
 	
 	jal limpa	
+	
+	lw $t1,0($v0)
+	beqz $t1,baixog2
+	sb $t3,1606($a1)
+	sb $t3,1605($a1)
+	sw $zero,0($v0)
+baixog2:
+	lb $t1,3846($a1)
+	sw $t1,0($v0)
+	
 	addi $a1,$a1,1920
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -887,6 +943,8 @@ baixog:
 esquerdag:
 	lw $t3, 0($t2)
 	beq $t3, 4, baixog
+	addi $t3,$zero,-1
+	sw $t3,0($t2)
 	addi $a2,$a1,-1
 	jal ve_se_bate
 	bnez $v1,baixog
@@ -895,6 +953,14 @@ esquerdag:
 	bnez $v1,baixog
 	
 	jal limpa	
+	lw $t1,0($v0)
+	beqz $t1,esquerdag2
+	sb $t1,1606($a1)
+	sb $t1,1926($a1)
+	sw $zero,0($v0)
+esquerdag2:
+	lb $t1,1599($a1)
+	sw $t1,0($v0)
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -1029,6 +1095,7 @@ loop:
 	#movimento fantasma vermelho
 	lw $a0, pac_position
 	addi $a3, $zero, 0x07
+	la $v0,comida
 	jal busca_fantasma
 	
 	#movimento fantasma verde
@@ -1038,6 +1105,8 @@ loop:
 	addi $t0, $t0, 4
 	addi $t2, $t2, 4
 	addi $a3, $zero, 0xc0
+	la $v0,comida
+	addi $v0,$v0,4
 	jal busca_fantasma
 solta1:	
 	addi $t1,$t1,-1
@@ -1052,6 +1121,7 @@ solta1:
 	lw $a0, pac_position
 	sw $a1,0($t0)
 	addi $a3, $zero, 0x07
+	la $v0,comida
 	jal busca_fantasma
 	
 	# movimento fantasma verde
@@ -1067,6 +1137,8 @@ solta1:
 	addi $t2, $t2, 4
 	addi $a3, $zero, 0xc0
 	sw $a1,0($t0)
+	la $v0,comida
+	addi $v0,$v0,4
 	jal busca_fantasma
 	
 fica_preso1:
