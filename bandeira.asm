@@ -26,17 +26,18 @@ funcao_ponto:
 	#Uso do t0(variaveis) e t1(endere?o)
 	
 	move $s6,$a1
+	lw $t1,baseadd #retorno recebe end base
 	#mul $t0,$t0,320 # y *= 320
 	addi $at, $zero, 320
 	mult $s6, $at
 	mflo $s6
-	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$s6
 	move $s6,$a0 #reg reusado
 	add $t1,$t1,$s6
 	sb $a2,0($t1)
 	
 	jr $ra
+	nop
 
 
 funcao_reta:
@@ -50,10 +51,10 @@ funcao_reta:
 	lw $t8, 8($a0)
 	lw $t9, 12($a0)
 
-	addi $s7,$ra,0
-	sub $t0,$t8,$t6
 
 	move $t2,$a0
+	addi $s7,$ra,0
+	sub $t0,$t8,$t6
 	addi $t1,$0, 2
 	move $t3,$t2	
 	move $a0,$t2
@@ -62,23 +63,31 @@ funcao_reta:
 		bgt $t0,$zero,else_fr_1
  		#mul $t0,$t0,-1 #Se s0 negativo troque o sinal
  		addi $at, $0, -1
+ 		nop
  		mult $t0, $at
+ 		nop
  		mflo $t0
+
  		addi $t2,$0, -1 #sx = negativo
  		j endif_fr_1
+ 		nop
 	else_fr_1:
 	 	addi $t2,$0, 1 #se s0 pos, dx = 1
 	endif_fr_1:
 	
 	sub $t1,$t9,$t7 # dy = y1 - y0
+	nop
 	if_fr_2:
 		bgt $t1,$zero,else_fr_2 
  		#mul $t1,$t1,-1 #Se s1 negativo troque o sinal
  		addi $at, $0, -1
+ 		nop
  		mult $t1, $at
+ 		nop
  		mflo $t1
  		addi $t3,$0, -1 #dy negativo
  		j endif_fr_2
+ 		nop
 	else_fr_2: 	
 		addi $t3,$0, 1 #se s3 positivo, dy = 1
 	endif_fr_2:
@@ -87,9 +96,12 @@ funcao_reta:
 		bgt $t0,$t1,else_fr_3 #se dx>dy
 		#mul $t4,$t1,-1 #err = (-dy)
 		addi $at, $0, -1
+		nop
 		mult $t4, $at
+		nop
 		mflo $t4
 		j endif_fr_3
+		nop
  	else_fr_3: 
  		move $t4,$t0 #err = dx
  	endif_fr_3:
@@ -103,6 +115,7 @@ funcao_reta:
 		addi $a1, $t7, 0
 		addi $s5, $t1, 0
 		jal funcao_ponto
+		nop
 		addi $t1, $s5, 0
 		
 		bne $t6, $t8, neq_fr_1 # if (x0 == x1 && y0 == y1) break;
@@ -115,16 +128,22 @@ funcao_reta:
 		if_fr_4:
 			#mul $t0, $t0, -1
 			addi $at, $0, -1
+			nop
 			mult $t0, $at
+			nop
 			mflo $t0
+			nop
 			ble $t5, $t0, endif_fr_4
 			sub $t4, $t4, $t1
 			add $t6, $t6, $t2	
 		endif_fr_4:
 		#mul $t0, $t0, -1
 		addi $at, $0, -1
+		nop
 		mult $t0, $at
+		nop
 		mflo $t0
+		nop
 		if_fr_5:
 			bge $t5, $t1, endif_fr_5
 			add $t4, $t4, $t0
@@ -133,7 +152,10 @@ funcao_reta:
 		j while_fr_1
 	ew_fr_1:
 	addi $ra,$s7,0
+	nop
+	nop
 	jr $ra
+	nop
 endreta:
 
 preenche:
@@ -142,17 +164,24 @@ preenche:
 	addi $s7,$ra,0
 	
 	la $t0,baseadd
+	nop
 	lw $t0,0($t0)
+	nop
 	add $t0,$t0,$a0
+	nop
 	#mul $a1,$a1,320
 	addi $at, $0, 320
+	nop
 	mult $a1, $at
+	nop
 	mflo $a1
+	nop
 	add $t0,$t0,$a1
 	
 	move $t1,$sp
-	move $t2,$t1
+	move $t2,$sp
 	lb $t4,0($t0)
+	nop
 	beq $t4,$a2,endpreenche
 	sb $a2,0($t0)
 	sw $t0,0($t1)
@@ -166,15 +195,19 @@ preenche:
 bfs:	
 	beq $t1,$sp,endpreenche 
 		addi $t1,$t1,4
+		nop
 		lw $t0,0($t1)
 		#blt $t1,0x10010000,er
 			# atualiza o ponteiro da fila
 			divu $t0,$t7
+			nop
 			# coloca na fila os enderecos adjacentes a $t0
 			addi $t0,$t0,1
 			mfhi $t3
+			nop
 			beq $t3,$t9,left
 			lb $t3,0($t0)
+			nop
 			bne $t3,$t4,left
 			sb $a2,0($t0)
 			sw $t0,0($t1)
@@ -183,30 +216,37 @@ left:			mfhi $t3
 			addi $t0,$t0,-2
 			beq $t3,$zero,down
 			lb $t3,0($t0)
+			nop
 			bne $t3,$t4,down
 			sb $a2,0($t0)
 			sw $t0,0($t1)
 			addi $t1,$t1,-4
 down:			addi $t0,$t0,321
+			nop
 			bgt $t0,$t6,up
 			lb $t3,0($t0)
+			nop
 			bne $t3,$t4,up
 			sb $a2,0($t0)
 			sw $t0,0($t1)
 			addi $t1,$t1,-4
 up:			addi $t0,$t0,-640
+			nop
 			bltu $t0,$t5,bfs
 			lb $t3,0($t0)
+			nop
 			bne $t3,$t4,bfs
 			sb $a2,0($t0)
 			sw $t0,0($t1)
 			addi $t1,$t1,-4
 
 		j bfs
+		nop
 endpreenche:
 	addi $ra,$s7,0
 	addi $sp,$sp,4
 	jr $ra
+	nop
 
 circulo:
 	# a0 = centro x, a1 = centro y, a2 = cor , a3 = raio
@@ -241,66 +281,95 @@ circulo:
 	addi $s5,$0, 320
 	#mul $a3,$a3,$a3 # raio = raio ao quadrado
 	mult $a3, $a3
+	nop
 	mflo $a3
 circloop:
 	blt $s1,$s0,endcirculo
 		# colocar pontos simetricamente nos oito octantes do circulo
 		add $a0,$s4,$s1 
 		add $a1,$s3,$s0
+		nop
 		jal funcao_ponto
+		nop
 
 	      	add $a0,$s4,$s0
 		add $a1,$s3,$s1
+		nop
 		jal funcao_ponto
+		nop
      	
         	sub $a0,$s4,$s0
 		add $a1,$s3,$s1
+		nop
 		jal funcao_ponto
+		nop
 
         	sub $a0,$s4,$s1
 		add $a1,$s3,$s0
+		nop
 		jal funcao_ponto
+		nop
 
         	sub $a0,$s4,$s1
 		sub $a1,$s3,$s0
+		nop
 		jal funcao_ponto
+		nop
 	
         	sub $a0,$s4,$s0
 		sub $a1,$s3,$s1
+		nop
 		jal funcao_ponto
+		nop
 
         	add $a0,$s4,$s0
 		sub $a1,$s3,$s1
+		nop
 		jal funcao_ponto
+		nop
 
         	add $a0,$s4,$s1
 		sub $a1,$s3,$s0
+		nop
 		jal funcao_ponto
+		nop
 		
 		addi $s0,$s0,1 # incrementa o y
+		nop
 		
 		#mul $t0,$s0,$s0
 		mult $s0, $s0
+		nop
 		mflo $t0
 		#mul $t1,$s1,$s1
 		mult $s1, $s1
+		nop
 		mflo $t1
+		nop
 		add $t1,$t0,$t1
+		nop
 		sub $t2,$t1,$a3 # salva em $t2 o valor y^2 + x^2 - r^2
 		
 		addi $t1,$s1,-1
+		nop
 		#mul $t1,$t1,$t1
 		mult $t1, $t1
+		nop
 		mflo $t1
+		nop
 		add $t1,$t0,$t1
+		nop
 		sub $t3,$t1,$a3 # salva em $t3 o valor y^2 + (x-1)^2 - r^2
 		
 		abs $t2,$t2
 		abs $t3,$t3
 		
+		nop
 		blt $t2,$t3,circloop # caso o valor de $t3 seja mais proximo de 0, x recebe x - 1, caso contratio x matem seu valor
 		addi $s1,$s1,-1
+		nop
 		j circloop
+		nop
 errocirc:
 endcirculo:
 	# recuperar da pilha registradores preservados utilizados
@@ -312,7 +381,9 @@ endcirculo:
 	lw $s4,20($sp)
 	lw $s5,0($sp)
 	addi $sp,$sp,24
+		nop
 	jr $ra
+		nop
 	
 	
 main:	
@@ -326,24 +397,34 @@ main:
  		beq $t0,$t1,ee
  		sw $a2,0($t0)
  		addi $t0,$t0,4
+		nop
  		j tela
+		nop
  		ee:
  		addi $a2,$0, 0x07
  		addi $a0,$0, 160
  		addi $a1,$0, 120
  		addi $a3,$0, 50
+		nop
  		jal circulo
+		nop
  		la $a0,reta5
  		addi $a2,$zero,0x07
+		nop
  		jal funcao_reta
+		nop
  		addi $a0,$0, 160
  		addi $a1,$0, 119
  		addi $a2,$0, 0x07
+		nop
  		jal preenche
+		nop
  		addi $a0,$0, 160
  		addi $a1,$0, 121
  		addi $a2,$0, 0x07
+		nop
  		jal preenche
+		nop
  	
 	# Sleep so the image lasts for a second
 	#addi $a0, $0, 2000
@@ -362,7 +443,9 @@ main:
  		beq $t0,$t1,eee
  		sw $a2,0($t0)
  		addi $t0,$t0,4
+		nop
  		j tela2
+		nop
  		eee:
 		# losango br
 		
@@ -370,28 +453,44 @@ main:
 
 		la $a0, reta7
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta8
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta9
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta1
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta2
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta3
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta4
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		la $a0, reta6
 		addi $a2, $0, 0x3f
+		nop
 		jal funcao_reta
+		nop
 		
 	 	#la $a0,losangobrasil
 	 	#addi $a2,$0, 0x3f
@@ -399,51 +498,75 @@ main:
 	 	addi $a0,$0, 159
 	 	addi $a1,$0, 119
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 159
 	 	addi $a1,$0, 121
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 161
 	 	addi $a1,$0, 119
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 161
 	 	addi $a1,$0, 121
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 40
 	 	addi $a1,$0, 123
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 32
 	 	addi $a1,$0, 119
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 288
 	 	addi $a1,$0, 121
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a0,$0, 280
 	 	addi $a1,$0, 117
 	 	addi $a2,$0, 0x3f
+	 	nop
 	 	jal preenche
+	 	nop
 	 	addi $a2,$0, 0x88
  		addi $a0,$0, 160
  		addi $a1,$0, 120
  		addi $a3,$0, 50
+ 		nop
  		jal circulo
+ 		nop
  		la $a0,reta5
  		addi $a2,$zero,0x88
+ 		nop
  		jal funcao_reta
+ 		nop
  		addi $a0,$0, 160
  		addi $a1,$0, 119
  		addi $a2,$0, 0x88
- 		jal preenche
+	 	nop
+	 	jal preenche
+	 	nop
  		addi $a0,$0, 160
  		addi $a1,$0, 121
  		addi $a2,$0, 0x88
- 		jal preenche
+	 	nop
+	 	jal preenche
+	 	nop
  	
 	# Sleep so the image lasts for a second
 	#addi $a0, $0, 2000
@@ -470,30 +593,42 @@ main:
 		loop32323:
 		beq $s1, $s0, endloopppp
 			la $a0, usalines
+			nop
 			lw $t2, 4($a0)
 			lw $t3, 12($a0)
+			nop
 			addi $t2, $t2, 18
 			addi $t3, $t3, 18
+			nop
 			sw $t2, 4($a0)
 			sw $t3, 12($a0)
 			la $a2, 0xff
+			nop
 			jal funcao_reta
-			
+			nop
 			la $a0, usalines2
+			nop
 			lw $t2, 4($a0)
 			lw $t3, 12($a0)
+			nop
 			addi $t2, $t2, 18
 			addi $t3, $t3, 18
+			nop
 			sw $t2, 4($a0)
 			sw $t3, 12($a0)
 			andi $a2,$s1,1
+			nop
 			bnez $a2,puli
 			la $a2, 0xff
+			nop
 			jal funcao_reta
+			nop
 		puli:
 			
 			addi $s1, $s1, 1
+			nop
 			j loop32323
+			nop
 		endloopppp:
 		addi $s0, $0, 6
 		addi $s1, $0, 0
@@ -504,15 +639,21 @@ main:
 			add $a0, $s3, $0
 			addi, $a1, $s4, 19
 			addi $a2, $0, 0xff
+			nop
 			jal preenche
+			nop
 			addi $a0, $s3, 161
 			addi, $a1, $s4, 19
 			addi $a2, $0, 0xff
+			nop
 			jal preenche
+			nop
 			
 			addi $s1, $s1, 1
 			addi $s4, $s4, 36
+			nop
 			j loop789
+			nop
 		loope789:
 		
  		addi $t0,$0, 0xff000000
@@ -524,7 +665,9 @@ main:
  			tela4:
  			beq $t0,$t1,eeede
  			sw $a2,0($t0)
+ 			nop
  			addi $t0,$t0,4
+ 			nop
  			j tela4
  			eeede:
  			addi $t0, $t0, 160
@@ -558,12 +701,15 @@ main:
 		la $a0, butaolines
 		addi $a2, $0, 0x1f
 		jal funcao_reta
+		nop
 		
 		addi $a0, $0, 0
 		addi $a1, $0, 0
 		addi $a2, $0, 0x1f
 		jal preenche
+		nop
 		
 		la $a0, butaolines2
 		addi $a2, $0, 0xff
 		jal funcao_reta
+		nop
