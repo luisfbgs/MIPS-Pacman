@@ -1,6 +1,7 @@
 .data
 	in1: 	.word 1
 	in2: 	.word 2
+	in7: 	.word 3
 	in3: 	.float 1.5
 	in4: 	.float 4.0
 	in5: 	.float 2.0
@@ -15,6 +16,8 @@ li $s6,0
 li $sp,0x10011ffc
 
 j main
+nop
+nop
 
 acertor:
 	li $v0,1
@@ -30,7 +33,11 @@ soma:
 	
 	add $t0,$t0,$t1
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 		
 multiplicacao:
@@ -46,7 +53,11 @@ multiplicacao:
 	mflo $t0
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 subtracao:	
@@ -58,7 +69,11 @@ subtracao:
 	
 	sub $t0,$t0,$t1
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_and:
@@ -70,7 +85,11 @@ op_and:
 	and $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_or:	
@@ -83,7 +102,11 @@ op_or:
 	or $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 mfhi_mflo:	
@@ -99,11 +122,20 @@ mfhi_mflo:
 	
 	mflo $t0	
 	bne $t0,$t2,mfhi_mflo_chama_error
+	nop
+	nop
 	j try	
+	nop
+	nop
 	
 	mfhi_mflo_chama_error: j error
+	nop
+	nop
 	try:
 	jal acertor
+	nop
+	nop
+	sw $zero,0($zero)
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	
@@ -112,7 +144,11 @@ mfhi_mflo:
 	li $a0,7
 	mfhi $t0
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_sll:
@@ -124,7 +160,11 @@ op_sll:
 	sll $t0,$t0,2
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_srl:
@@ -135,7 +175,11 @@ op_srl:
 	srl $t0,$t0,1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_slt:
@@ -147,7 +191,11 @@ op_slt:
 	slt $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 op_sgt:
 	lw $t0,in1
@@ -158,7 +206,11 @@ op_sgt:
 	sgt $t0,$t1,$t0
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_sra:
@@ -169,7 +221,11 @@ op_sra:
 	sra $t0,$t0,2
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_srav:
@@ -181,7 +237,11 @@ op_srav:
 	srav $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_sllv:
@@ -193,7 +253,11 @@ op_sllv:
 	sllv $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_srlv:
@@ -205,8 +269,12 @@ op_srlv:
 	srlv $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_xor:
@@ -218,7 +286,11 @@ op_xor:
 	xor $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_nor:
@@ -230,7 +302,11 @@ op_nor:
 	nor $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_sltu:
@@ -242,7 +318,11 @@ op_sltu:
 	sltu $t0,$t0,$t1
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra			
 	
 op_lui:
@@ -251,7 +331,11 @@ op_lui:
 	li $a0,19	
 	
 	bne $t0,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
 op_div:
@@ -267,7 +351,11 @@ op_div:
 	mflo $t0
 	
 	bne $t0,$t2,error	
+	nop
+	nop
 	jal acertor
+	nop
+	nop
 	
 	li $t0,0
 	sw $zero,0($zero)
@@ -276,10 +364,14 @@ op_div:
 	li $t2,1
 	li $a0,21
 	bne $t0,$t2,error
+	nop
+	nop
 	
 	lw $ra,0($sp)
 	addi $sp,$sp,4
 	j acertor
+	nop
+	nop
 	jr $ra
 	
 op_mthi_mtlo:
@@ -293,9 +385,19 @@ op_mthi_mtlo:
 	mfhi $t1
 	
 	bne $t1,$t2,chamaerror
+	nop
+	nop
 	jal acertor
+	nop
+	nop
+	sw $zero,0($zero)
 	j try2
+	nop
+	nop
 	chamaerror: j error
+	nop
+	nop
+		sw $zero,0($zero)
 	li $t0,0
 	try2:
 	lw $ra,0($sp)	
@@ -307,93 +409,185 @@ op_mthi_mtlo:
 	mflo $t1
 	
 	bne $t1,$t2,error
+	nop
+	nop
 	j acertor
+	nop
+	nop
 	jr $ra	
 	
-		
+op_addi: 	
+	lw $t0,in1
+	lw $t1,in2
+	li $a0,27
+	
+	addi $t0,$t0,1
+	bne $t0,$t1,error
+	nop
+	nop
+	j acertor
+	nop
+	nop
+	jr $ra
+	
+op_andi: 	
+	lw $t0,in1
+	li $a0,24
+	
+	andi $t0,$t0,2
+	bnez $t0,error
+	nop
+	nop
+	j acertor
+	nop
+	nop
+	jr $ra
+	
+op_xori: 	
+	lw $t0,in1
+	li $a0,26
+	
+	xori $t0,$t0,1
+	bnez $t0,error
+	nop
+	nop
+	j acertor
+	nop
+	nop
+	jr $ra
+	
+op_ori: 	
+	lw $t0,in1
+	lw $t1,in7
+	li $a0,25
+	
+	xori $t0,$t0,2
+	bne $t0,$t1,error
+	nop
+	nop
+	j acertor
+	nop
+	nop
+	jr $ra
 main: 
 	#ULA			#codigo de erro
 	jal soma 		#1
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal multiplicacao 	#2
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal subtracao 		#3
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_and		#4
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_or		#5
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal mfhi_mflo		#6/7
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sll		#8
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_srl		#9
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_slt		#10
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sgt		#11
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sra		#12
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_srav		#13
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sllv		#14
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_srlv		#15
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_xor		#16
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_nor		#17	
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_sltu		#18
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_lui		#19
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_div		#20/21
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
 	jal op_mthi_mtlo	#22/23
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_multu		#24
+	jal op_andi		#24
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_divu		#25
-	li $t0,0
-	sw $zero,0($t0)	
-	jal op_addu		#26
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_subu		#27
+	jal op_ori		#25
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_andi		#28
+	jal op_xori		#26
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
-	jal op_ori		#29
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_xori		#30
-	li $t0,0
-	sw $zero,0($t0)
-	jal op_addi		#31
+	jal op_addi		#27
+	nop
+	nop
 	li $t0,0
 	sw $zero,0($t0)
