@@ -574,10 +574,6 @@ erro_dir:
 ve_se_bate:
 	addi $v1,$zero,0
 	lb $a0,0($a2)
-	andi $a0,$a0,0xFF
-	bnez $a0,bate
-	jr $ra
-bate:
 	add $v1,$zero,$a0
 	jr $ra
 
@@ -809,6 +805,7 @@ busca_fantasma:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
 	
+	addi $s0,$zero,0
 	move $t3, $a0
 	subi $t3, $t3, 0xff000000
 	addi $t6, $0, 320
@@ -838,6 +835,7 @@ busca_fantasma:
 	lw $a1, 0($t0)
 	# if abs($t8) > abs($t9) movimento horizontal
 	ble $t6, $t7, vertical_mov
+	horizontal_mov:	
 		# $t8 > 0 significa que o fantasma esta a direita do pac
 		bgtz $t8, esquerdag
 		j direitag
@@ -847,17 +845,21 @@ busca_fantasma:
 		bgtz $t9, cimag
 		j baixog
 	
-	direitag: 
+direitag:
+	addi $t8,$zero,1
+	addi $s0,$s0,1 
 	lw $t3, 0($t2)
-	beq $t3, 1, cimag
-	addi $t3,$zero,-1
+	beq $t3, 1, vertical_mov
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
 	addi $a2,$a1,12
 	jal ve_se_bate
-	bnez $v1,cimag
+	bnez $v1,vertical_mov
 	addi $a2,$a1,3532
 	jal ve_se_bate
-	bnez $v1,cimag
+	bnez $v1,vertical_mov
 	
 	jal limpa	
 	
@@ -879,16 +881,20 @@ direitag2:
 	j saig
 	
 cimag:	
+	addi $t9,$zero,0
+	addi $s0,$s0,1
 	lw $t3, 0($t2)
-	beq $t3, 2, esquerdag
-	addi $t3,$zero,-1
+	beq $t3, 2, horizontal_mov
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
 	addi $a2,$a1,-320
 	jal ve_se_bate
-	bnez $v1,esquerdag
+	bnez $v1,horizontal_mov
 	addi $a2,$a1,-309
 	jal ve_se_bate
-	bnez $v1,esquerdag
+	bnez $v1,horizontal_mov
 	
 	jal limpa	
 	
@@ -910,16 +916,20 @@ cimag2:
 	j saig
 	
 baixog:	
+	addi $t9,$zero,1
+	addi $s0,$s0,1
 	lw $t3, 0($t2)
-	beq $t3, 3, direitag
-	addi $t3,$zero,-1
+	beq $t3, 3, horizontal_mov
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
 	addi $a2,$a1,3840
 	jal ve_se_bate
-	bnez $v1,direitag
+	bnez $v1,horizontal_mov
 	addi $a2,$a1,3851
 	jal ve_se_bate
-	bnez $v1,direitag
+	bnez $v1,horizontal_mov
 	
 	jal limpa	
 	
@@ -941,16 +951,20 @@ baixog2:
 	j saig
 	
 esquerdag:
+	addi $t8,$zero,0
+	addi $s0,$s0,1
 	lw $t3, 0($t2)
-	beq $t3, 4, baixog
-	addi $t3,$zero,-1
+	beq $t3, 4, vertical_mov
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
 	addi $a2,$a1,-1
 	jal ve_se_bate
-	bnez $v1,baixog
+	bnez $v1,vertical_mov
 	addi $a2,$a1,3519
 	jal ve_se_bate
-	bnez $v1,baixog
+	bnez $v1,vertical_mov
 	
 	jal limpa	
 	lw $t1,0($v0)
@@ -977,46 +991,48 @@ saig:
 #Armazena tecla lida ------------------------------------------------------------------------------------------------------------------
 teclap1: 
 	la $t3,mov
-	sw $t2,0($t3)
+	sw $t0,0($t3)
 	j sai_tecla
 	
 teclap2:
 	la $t3,mov
-	sw $t2,4($t3)
+	sw $t0,4($t3)
 	j sai_tecla
 teclap3:
 	la $t3,mov
-	sw $t2,8($t3)
+	sw $t0,8($t3)
 	j sai_tecla
 teclap4:
 	la $t3,mov
-	sw $t2,12($t3)
+	sw $t0,12($t3)
 	j sai_tecla
 
 tecla:	
-	# Pac-man amarelo
+	
+	addi $t0,$zero,1
 	beq $t2,119,teclap1	# cima - w
-	beq $t2,115,teclap1	# baixo - s
-	beq $t2,100,teclap1	# direita - d
-	beq $t2,97,teclap1	# esquerda - a
-	
-	# Pac-man vermelho
 	beq $t2,105,teclap2	# cima - i
-	beq $t2,106,teclap2	# baixo - k
-	beq $t2,107,teclap2	# direita - l
-	beq $t2,108,teclap2	# esquerda - j
-	
-	# Pac-man verde
 	beq $t2,56,teclap3	# cima - 8
-	beq $t2,53,teclap3	# baixo - 5
-	beq $t2,54,teclap3	# direita - 6
-	beq $t2,52,teclap3	# esquerda - 4
-
-	# Pac-man marrom
 	beq $t2,102,teclap4	# cima - f
+	
+	addi $t0,$zero,2
+	beq $t2,115,teclap1	# baixo - s
+	beq $t2,107,teclap2	# baixo - k
+	beq $t2,53,teclap3	# baixo - 5
 	beq $t2,118,teclap4	# baixo - v
+	
+	addi $t0,$zero,3
+	beq $t2,100,teclap1	# direita - d
+	beq $t2,108,teclap2	# direita - l
+	beq $t2,54,teclap3	# direita - 6
 	beq $t2,98,teclap4	# direita - b
+	
+	addi $t0,$zero,4
+	beq $t2,97,teclap1	# esquerda - a
+	beq $t2,106,teclap2	# esquerda - j
+	beq $t2,52,teclap3	# esquerda - 4
 	beq $t2,99,teclap4	# esquerda - c
+	
 sai_tecla: 
 	jr $ra
 	
@@ -1038,7 +1054,7 @@ loop_jogo:
 	addi $a1,$a1,36640 
 	la $t1,g_position
 	sw $a1,4($t1)
-	addi $a0,$zero,0xc0
+	addi $a0,$zero,0x88
 	jal pintag	
 	
 	# Pinta o pac amarelo em sua posicao inicial, $a1 = endereco, $a0 = cor
@@ -1104,7 +1120,7 @@ loop:
 	la $t0,g_position
 	addi $t0, $t0, 4
 	addi $t2, $t2, 4
-	addi $a3, $zero, 0xc0
+	addi $a3, $zero, 0x88
 	la $v0,comida
 	addi $v0,$v0,4
 	jal busca_fantasma
@@ -1135,7 +1151,7 @@ solta1:
 	la $t2,mov_antg
 	addi $t0, $t0, 4
 	addi $t2, $t2, 4
-	addi $a3, $zero, 0xc0
+	addi $a3, $zero, 0x88
 	sw $a1,0($t0)
 	la $v0,comida
 	addi $v0,$v0,4
@@ -1176,10 +1192,10 @@ dir:
 movimenta:	
 	lw $t2,0($t2)
 
-	beq $t2,119,cima
-	beq $t2,115,baixo
-	beq $t2,100,direita
-	beq $t2,97,esquerda
+	beq $t2,1,cima
+	beq $t2,2,baixo
+	beq $t2,3,direita
+	beq $t2,4,esquerda
 	
 	lw $t1,players
 	blt $t1,2,loop
@@ -1195,10 +1211,10 @@ dir2:
 movimenta2:	
 	lw $t2,4($t2)
 	
-	beq $t2,105,cima
-	beq $t2,107,baixo
-	beq $t2,108,direita
-	beq $t2,106,esquerda
+	beq $t2,1,cima
+	beq $t2,2,baixo
+	beq $t2,3,direita
+	beq $t2,4,esquerda
 	
 	lw $t0,players
 	blt $t0,3,loop
@@ -1214,10 +1230,10 @@ dir3:
 movimenta3:	
 	lw $t2,8($t2)
 	
-	beq $t2,56,cima
-	beq $t2,53,baixo
-	beq $t2,54,direita
-	beq $t2,52,esquerda
+	beq $t2,1,cima
+	beq $t2,2,baixo
+	beq $t2,3,direita
+	beq $t2,4,esquerda
 	
 	lw $t0,players
 	blt $t0,4,loop
@@ -1233,9 +1249,9 @@ dir4:
 movimenta4:	
 	lw $t2,12($t2)
 	
-	beq $t2,102,cima
-	beq $t2,118,baixo
-	beq $t2,98,direita
-	beq $t2,99,esquerda
+	beq $t2,1,cima
+	beq $t2,2,baixo
+	beq $t2,3,direita
+	beq $t2,4,esquerda
 	
 	j loop
