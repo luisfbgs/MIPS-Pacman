@@ -8,7 +8,7 @@
  coordinates5: .word 135,18 , 64,18 , 64,41 , 135,41 , 135,18
  coordinates6: .word 64,54 , 64,113 , 75,113 , 75,89 , 135,89 , 135,78 , 75,78 , 75,54 , 64,54
  coordinates7: .word 159,54 , 88,54 , 88,65 , 148,65 , 148,89 , 159,89
- coordinates8: .word 151,102 , 88,102 , 88,161 , 159,161
+ coordinates8: .word 159,102 , 88,102 , 88,161 , 159,161
  coordinates9: .word 151,102 , 151,109 , 97,109 , 97,155 , 159,155
  coordinates10: .word 64,126 , 64,174 , 16,174 , 16,185 , 75,185, 75,126 , 64,126
  coordinates11: .word 166,174 , 88,174 , 88,185 , 148,185 , 148,221 , 166,221
@@ -40,8 +40,6 @@
 addi $t0,$zero,1
 la $t1,espelho
 sw $t0,0($t1)
-
-li $sp,0x10011ffc
 
 j mapa
 
@@ -805,7 +803,9 @@ busca_fantasma:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
 	
+	# $s0 = quantidade de direcoes tentadas
 	addi $s0,$zero,0
+	
 	move $t3, $a0
 	subi $t3, $t3, 0xff000000
 	addi $t6, $0, 320
@@ -847,13 +847,16 @@ busca_fantasma:
 	
 direitag:
 	addi $t8,$zero,1
-	addi $s0,$s0,1 
+	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior 
 	lw $t3, 0($t2)
 	beq $t3, 1, vertical_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
 	srl $s1,$s0,2
 	sll $s1,$s1,3
 	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,12
 	jal ve_se_bate
 	bnez $v1,vertical_mov
@@ -863,12 +866,12 @@ direitag:
 	
 	jal limpa	
 	
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,direitag2
 	sb $t1,1605($a1)
 	sb $t1,1925($a1)
 	sw $zero,0($v0)
-direitag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,1932($a1)
 	sw $t1,0($v0)
 
@@ -883,12 +886,15 @@ direitag2:
 cimag:	
 	addi $t9,$zero,0
 	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 2, horizontal_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
 	srl $s1,$s0,2
 	sll $s1,$s1,3
 	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,-320
 	jal ve_se_bate
 	bnez $v1,horizontal_mov
@@ -898,12 +904,12 @@ cimag:
 	
 	jal limpa	
 	
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,cimag2
 	sb $t1,1926($a1)
 	sb $t1,1925($a1)
 	sw $zero,0($v0)
-cimag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,-314($a1)
 	sw $t1,0($v0)
 	
@@ -918,12 +924,15 @@ cimag2:
 baixog:	
 	addi $t9,$zero,1
 	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 3, horizontal_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
 	srl $s1,$s0,2
 	sll $s1,$s1,3
 	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,3840
 	jal ve_se_bate
 	bnez $v1,horizontal_mov
@@ -932,13 +941,13 @@ baixog:
 	bnez $v1,horizontal_mov
 	
 	jal limpa	
-	
+
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,baixog2
-	sb $t3,1606($a1)
-	sb $t3,1605($a1)
+	sb $t1,1606($a1)
+	sb $t1,1605($a1)
 	sw $zero,0($v0)
-baixog2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,3846($a1)
 	sw $t1,0($v0)
 	
@@ -953,12 +962,15 @@ baixog2:
 esquerdag:
 	addi $t8,$zero,0
 	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 4, vertical_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
 	srl $s1,$s0,2
 	sll $s1,$s1,3
 	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,-1
 	jal ve_se_bate
 	bnez $v1,vertical_mov
@@ -966,15 +978,16 @@ esquerdag:
 	jal ve_se_bate
 	bnez $v1,vertical_mov
 	
-	jal limpa	
+	jal limpa
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,esquerdag2
 	sb $t1,1606($a1)
 	sb $t1,1926($a1)
 	sw $zero,0($v0)
-esquerdag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,1599($a1)
 	sw $t1,0($v0)
+	
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
