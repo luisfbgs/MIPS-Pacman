@@ -14,6 +14,8 @@
  coordinates11: .word 166,174 , 88,174 , 88,185 , 148,185 , 148,221 , 166,221
  coordinates12: .word 16,198 , 51,198 , 51,221 , 16,221 , 16,198
  coordinates13: .word 64,198 , 135,198 , 135,221 , 64,221 , 64,198
+ menu_triangle_1: .word 139,103, 128,117, 139,132, 139,103
+ menu_triangle_2: .word 180,103, 192,117, 180,132, 180,103
  food_coordinate1: .word 9,23 , 57,23 , 141,23 , 81,47 , 9,167 , 141,191 , 57,203
  food_coordinate2: .word 9,11 , 9,47 , 9,71 , 9,167 , 9,191 , 9,227 , 93,71
  espelho: .word 1
@@ -38,11 +40,271 @@
  
 .text
 
+jal main_menu
+
 addi $t0,$zero,1
 la $t1,espelho
 sw $t0,0($t1)
 
 j mapa
+
+# Menu inicial
+
+main_menu:
+
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+
+	jal preenchetela
+	#a0 = Endereco das coordenadas
+	#a2 = cor
+	
+	la $a0, menu_triangle_1
+	li $a2, 0x3F
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	
+	la $a0, menu_triangle_2
+	li $a2, 0x3F
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	
+	la $t1,0xFF100000
+	la $t3, players
+	lw $a0, 0($t3)
+	addi $s0, $a0, 0
+	polling:
+		beq $s0, $a0, n_mudou
+		jal print_number_players
+		addi $s0, $a0, 0
+		n_mudou:
+		la $t1,0xFF100000
+		lb $t2,4($t1)       # Tecla lida
+		sb $0, 4($t1)
+		beq $t2, 0xA, endpolling
+		bne $t2, 0x61, notA
+		
+		addi $a0, $a0, -1
+		bne $a0, $0, polling
+		addi $a0, $0, 4
+		sw $a0, 0($t3)	
+		
+		notA: bne $t2, 0x64, notD
+		
+		addi $a0, $a0, 1
+		bne $a0, 5, polling
+		addi $a0, $0, 1
+		sw $a0, 0($t3)
+	
+		notD: j polling
+	endpolling:
+	
+
+	jr $ra
+	
+	
+# imprime numero de players
+
+print_number_players: 
+
+	li $t0, 0xFF000000
+	li $t2, 0xFFFFFFFF
+	
+	addi $t8, $0, 0
+	addi $t9, $0, 30
+		addi $t4, $0, 102
+		mul $t1, $t4, 320
+		addi $t1, $t1, 140
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+	loop_black:
+	beq $t8, $t9, emb
+	sw $0, 0($t1)
+	sw $0, 4($t1)
+	sw $0, 8($t1)
+	sw $0, 12($t1)
+	sw $0, 16($t1)
+	sw $0, 20($t1)
+	sw $0, 24($t1)
+	sw $0, 28($t1)
+	sw $0, 32($t1)
+	sw $0, 36($t1)
+	addi $t1, $t1, 320
+	addi $t8, $t8, 1
+	j loop_black
+	emb:
+	
+	
+	bne $a0, 1, notOne
+		addi $t4, $0, 102
+		mul $t1, $t4, 320
+		addi $t1, $t1, 156
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnotone:
+		beq $t4, $t5, endloopnotone
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnotone		
+		endloopnotone:
+		jr $ra
+	notOne:
+	bne $a0, 2, notTwo
+		addi $t4, $0, 102
+		mul $t1, $t4, 320
+		addi $t1, $t1, 148
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnottwo:
+		beq $t4, $t5, endloopnottwo
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			sw $t2, 16($t1)
+			sw $t2, 20($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnottwo		
+		endloopnottwo:
+		jr $ra
+	
+	notTwo:
+	bne $a0, 3, notThree
+		addi $t4, $0, 102
+		mul $t1, $t4, 320
+		addi $t1, $t1, 144
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnot3:
+		beq $t4, $t5, endloopnot3
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			sw $t2, 12($t1)
+			sw $t2, 16($t1)
+			sw $t2, 24($t1)
+			sw $t2, 28($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnot3		
+		endloopnot3:
+		jr $ra
+	
+	notThree: 
+	bne $a0, 4, fudeu
+	li $t6, 0xFF
+		addi $t4, $0, 102
+		mul $t1, $t4, 320
+		addi $t1, $t1, 144
+		add $t1, $t1, $t0
+		addi $t7, $t1, 0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnot4:
+		beq $t4, $t5, endloopnot4
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnot4		
+		endloopnot4:
+	
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_1:
+		beq $t8, $t9, em1
+		sb $t6, 10($t7)
+		sb $t6, 11($t7)
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		sb $t6, 28($t7)
+		sb $t6, 29($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_1
+	em1:
+	addi $t8, $0, 7
+	addi $t9, $0, 0
+	loop_menu_2:
+		beq $t8, $t9, em2
+		sb $t6, 11($t7)
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 17($t7)
+		sb $t6, 22($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		sb $t6, 28($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_2
+	em2:
+	addi $t8, $0, 6
+	addi $t9, $0, 0
+	loop_menu_3:
+		beq $t8, $t9, em3
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 17($t7)
+		sb $t6, 18($t7)
+		sb $t6, 21($t7)
+		sb $t6, 22($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_3
+	em3:
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_4:
+		beq $t8, $t9, em4
+		sb $t6, 13($t7)
+		sb $t6, 14($t7)
+		sb $t6, 15($t7)
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		sb $t6, 24($t7)
+		sb $t6, 25($t7)
+		sb $t6, 26($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_4
+	em4:
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_5:
+		beq $t8, $t9, em5
+		sb $t6, 15($t7)
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		sb $t6, 24($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_5
+	em5:
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		addi $t7, $t7, 320
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+	
+	fudeu:
+
+	jr $ra
 
 #Preenche tela de preto -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  preenchetela:	
