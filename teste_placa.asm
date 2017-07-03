@@ -10,6 +10,9 @@
 	cpadds: .float 5.5
 	cpsubs: .float 2.5
 	estate: .word  0
+	testw: .word 0
+	testb: .byte 0
+	testh: .half 0
 .text
 li $s7,0
 li $s6,0
@@ -469,125 +472,191 @@ op_ori:
 	nop
 	nop
 	jr $ra
+	
+op_sw_lw:
+	la $t1,testw
+	addi $t0,$zero,1
+	sw $t0,0($t1)
+	lw $t2,0($t1)
+	addi $a0,$zero,28
+	
+	bne $t0,$t2,error
+	j acertor
+	
+op_sb_lb:
+	la $t1,testb
+	addi $t0,$zero,1
+	sb $t0,0($t1)
+	lb $t2,0($t1)
+	addi $a0,$zero,29
+	
+	bne $t0,$t2,error
+	j acertor
+	
+op_lbu:
+	la $t1,testb
+	addi $t0,$zero,1
+	sb $t0,0($t1)
+	lbu $t2,0($t1)
+	addi $a0,$zero,30
+	
+	bne $t0,$t2,error
+	j acertor
+op_sh_lh:
+	la $t1,testh
+	addi $t0,$zero,1
+	sh $t0,0($t1)
+	lh $t2,0($t1)
+	addi $a0,$zero,31
+	
+	bne $t0,$t2,error
+	j acertor
+op_lhu:
+	la $t1,testh
+	addi $t0,$zero,1
+	sh $t0,0($t1)
+	lhu $t2,0($t1)
+	addi $a0,$zero,32
+	
+	bne $t0,$t2,error
+	j acertor
 main: 
 	#ULA			#codigo de erro
 	jal soma 		#1
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal multiplicacao 	#2
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal subtracao 		#3
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	sw $zero,0($zero)
 	jal op_and		#4
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_or		#5
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal mfhi_mflo		#6/7
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_sll		#8
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_srl		#9
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_slt		#10
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_sgt		#11
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_sra		#12
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_srav		#13
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_sllv		#14
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_srlv		#15
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_xor		#16
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_nor		#17	
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_sltu		#18
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_lui		#19
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_div		#20/21
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_mthi_mtlo	#22/23
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_andi		#24
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_ori		#25
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_xori		#26
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	nop
+	sw $zero,0($zero)
 	jal op_addi		#27
 	nop
 	nop
-	li $t0,0
-	sw $zero,0($t0)
+	sw $zero,0($zero)
+	jal op_sw_lw		#28
+	nop
+	nop
+	sw $zero,0($zero)
+	jal op_sb_lb		#29
+	nop
+	nop
+	sw $zero,0($zero)
+	jal op_lbu		#30
+	nop
+	nop
+	sw $zero,0($zero)
+	jal op_sh_lh		#31
+	nop
+	nop
+	sw $zero,0($zero)
+	jal op_lhu		#32
+	nop
+	nop
+	sw $zero,0($zero)
