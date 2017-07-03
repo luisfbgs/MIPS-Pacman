@@ -1122,13 +1122,29 @@ loop_jogo:
 	addi $a0,$zero,0x0f
 	jal pintag
 	
-	# Pinta o fantasma verde dentro da prisao
+	# Pinta o fantasma roxo dentro da prisao
 	lw $a1,baseadd
 	addi $a1,$a1,36640 
 	la $t1,g_position
 	sw $a1,4($t1)
-	addi $a0,$zero,0x88
+	addi $a0,$zero,0x8a
 	jal pintag	
+	
+	# Pinta o fantasma rosa dentro da prisao
+	lw $a1,baseadd
+	addi $a1,$a1,40480 
+	la $t1,g_position
+	sw $a1,8($t1)
+	addi $a0,$zero,0x8f
+	jal pintag
+	
+	# Pinta o fantasma azul dentro da prisao
+	lw $a1,baseadd
+	addi $a1,$a1,40468 
+	la $t1,g_position
+	sw $a1,12($t1)
+	addi $a0,$zero,0x99
+	jal pintag
 	
 	# Pinta o pac amarelo em sua posicao inicial, $a1 = endereco, $a0 = cor
 	lw $a1,baseadd
@@ -1188,18 +1204,45 @@ loop:
 	lw $s3,morto
 	jal busca_fantasma
 	
-	#movimento fantasma verde
+	#movimento fantasma roxo
 	la $a0, pac_position
 	lw $a0, 4($a0)
 	la $t0,g_position
 	addi $t0, $t0, 4
 	addi $t2, $t2, 4
-	addi $a3, $zero, 0x88
+	addi $a3, $zero, 0x8a
 	la $v0,comida
 	addi $v0,$v0,4
 	la $s3,morto
 	lw $s3,4($s3)
 	jal busca_fantasma
+	
+	#movimento fantasma rosa
+	la $a0, pac_position
+	lw $a0, 8($a0)
+	la $t0,g_position
+	addi $t0, $t0, 8
+	addi $t2, $t2, 8
+	addi $a3, $zero, 0x8f
+	la $v0,comida
+	addi $v0,$v0,8
+	la $s3,morto
+	lw $s3,8($s3)
+	jal busca_fantasma
+	
+	#movimento fantasma azul
+	la $a0, pac_position
+	lw $a0, 12($a0)
+	la $t0,g_position
+	addi $t0, $t0, 12
+	addi $t2, $t2, 12
+	addi $a3, $zero, 0x99
+	la $v0,comida
+	addi $v0,$v0,12
+	la $s3,morto
+	lw $s3,12($s3)
+	jal busca_fantasma
+
 	j fica_preso1
 solta1:	
 	addi $t1,$t1,-1
@@ -1218,7 +1261,7 @@ solta1:
 	lw $s3,morto
 	jal busca_fantasma
 	
-	# movimento fantasma verde
+	# movimento fantasma roxo
 	lw $a1,4($t0)
 	jal limpa
 	lw $a1,baseadd
@@ -1229,12 +1272,49 @@ solta1:
 	la $t2,mov_antg
 	addi $t0, $t0, 4
 	addi $t2, $t2, 4
-	addi $a3, $zero, 0x88
+	addi $a3, $zero, 0x8a
 	sw $a1,0($t0)
 	la $v0,comida
 	addi $v0,$v0,4
 	la $s3,morto
 	lw $s3,4($s3)
+	jal busca_fantasma
+	
+	# movimento fantasma rosa
+	lw $a1,4($t0)
+	jal limpa
+	lw $a1,baseadd
+	addi $a1,$a1,51994
+	la $a0, pac_position
+	lw $a0, 8($a0)
+	la $t0,g_position
+	la $t2,mov_antg
+	addi $t0, $t0, 8
+	addi $t2, $t2, 8
+	addi $a3, $zero, 0x8f
+	sw $a1,0($t0)
+	la $v0,comida
+	addi $v0,$v0,8
+	la $s3,morto
+	lw $s3,8($s3)
+	
+	# movimento fantasma azul
+	lw $a1,4($t0)
+	jal limpa
+	lw $a1,baseadd
+	addi $a1,$a1,51982
+	la $a0, pac_position
+	lw $a0, 12($a0)
+	la $t0,g_position
+	la $t2,mov_antg
+	addi $t0, $t0, 12
+	addi $t2, $t2, 12
+	addi $a3, $zero, 0x99
+	sw $a1,0($t0)
+	la $v0,comida
+	addi $v0,$v0,12
+	la $s3,morto
+	lw $s3,12($s3)
 	jal busca_fantasma
 	
 fica_preso1:
@@ -1255,6 +1335,26 @@ fica_preso1:
 	lw $a0,0($t0)
 	addi $v0,$zero,32
 	syscall
+	
+	lw $t0,players
+	la $t1,mov
+	addi $a1,$zero,3
+	addi $v0,$zero,42
+	bgt $t0,1,rand_p3
+	syscall
+	addi $a0,$a0,1
+	sw $a0,4($t1)
+rand_p3: 
+	bgt $t0,2,rand_p4
+	syscall
+	addi $a0,$a0,1
+	sw $a0,8($t1)
+rand_p4: 
+	bgt $t0,3,dir
+	syscall
+	addi $a0,$a0,1
+	sw $a0,12($t1)		
+	
 	
 	# Prepara os valores para movimentar o pac amarelo
 	# $t2 = endereco da tecla que indica a direcao
