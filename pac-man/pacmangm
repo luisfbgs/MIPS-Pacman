@@ -39,6 +39,7 @@
  cor: .word 0
  morto: .word -1,-1,-1,-1
  pontos: .word 0,0,0,0
+ bixao: .word 0,0,0,0
  
  g_position: .word 0,0,0,0
  mov_antg: .word 0,0,0,0
@@ -47,7 +48,21 @@
  
 .text
 inicio:
+
 li $sp,0x10011ffc
+
+la $t0,mov
+sw $0,0($t0)
+sw $0,4($t0)
+sw $0,8($t0)
+sw $0,12($t0)
+
+la $t0,bixao
+sw $0,0($t0)
+sw $0,4($t0)
+sw $0,8($t0)
+sw $0,12($t0)
+
 
 jal main_menu
 
@@ -706,7 +721,7 @@ mapa:
 	jal loop_food
 	
 	la $a0,food3
-	addi $a2,$0,0x7F
+	addi $a2,$0,0x5F
 	addi $s1,$zero,1
 	jal loop_food
 	
@@ -906,6 +921,8 @@ prox4:
 
 # Proximo pac --------------------------------------------------------------
 # Verifica o proximo pacman e segue para movimentar o proximo
+jrra:
+	jal se_mata2
 prox_pac:
 	lw $t1,atpac
 	lw $t0,players
@@ -947,31 +964,73 @@ ve_se_bate:
 	add $v1,$zero,$a0
 	jr $ra
 
+# Pacman se mata -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+se_mata:
+	j jrra
+se_mata2:
+	lw $t3,atpac
+	addi $sp,$sp,4
+	beq $t3,0,mata_p1
+	beq $t3,4,mata_p2
+	beq $t3,8,mata_p3
+	beq $t3,12,mata_p4
+
 # Colidi no movimento -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
 mov_colide:
 	sw $ra,-4($sp)
 	
+	bnez $k0,mov_colide2
+	
 	add $a2,$a1,$s6
 	jal ve_se_bate
-	bnez $v1,erro_dir
+	beq $v1,0xFFFFFFC0,erro_dir
+	beq $v1,0x01,erro_dir
+	beq $v1,0x08,se_mata
+	
+	
 	add $a2,$a1,$s7
 	jal ve_se_bate
-	bnez $v1,erro_dir
+	beq $v1,0xFFFFFFC0,erro_dir
+	beq $v1,0x01,erro_dir
+	beq $v1,0x08,se_mata
+		
+	lw $ra,-4($sp)
+	jr $ra
 	
+mov_colide2:
+
+	add $a2,$a1,$s6
+	jal ve_se_bate
+	beq $v1,0xFFFFFFC0,erro_dir
+			
+	add $a2,$a1,$s7
+	jal ve_se_bate
+	beq $v1,0xFFFFFFC0,erro_dir
+		
 	lw $ra,-4($sp)
 	jr $ra
 	
 # Verifica se come comida-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ponto_verif:
 	lb $t8,1926($a1)
+	beq $t8,0x5F,ficar_bixao
+	
 	add $v0,$zero,$t8
 	andi $v0,$v0,1
 	lw $v1,0($s5)
 	add $v0,$v0,$v1
 	sw $v0,0($s5)
+	
 	jr $ra
-		
+	
+ficar_bixao:
+	lw $t7,atpac
+	la $t6,bixao
+	add $t6,$t6,$t7
+	addi $t5,$0,50
+	sw $t5,0($t6)
+	jr $ra 	
 # Movimenta o Pacman  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
 # $a3 = deslocamento que se deseja fazer no pacman
@@ -985,6 +1044,9 @@ mexe_pac:
 	lw $a1,0($t0)
 	la $s5,pontos
 	add $s5,$s5,$t3
+	la $k0,bixao
+	add $k0,$k0,$t3
+	lw $k0,0($k0)
 	
 	jal mov_colide
 			
@@ -1327,6 +1389,7 @@ nao_ta_morto:
 direitag:
 	addi $t8,$zero,1
 	addi $s0,$s0,1
+	beq $s0,10,saig
 	# Evita fazer o movimento contrario ao anterior 
 	lw $t3, 0($t2)
 	beq $t3, 1, vertical_mov
@@ -1357,7 +1420,7 @@ direitag:
 	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
 	beq $t1,0xFFFFFFFF,direitag2
-	beq $t1,0xFFFFFFF0,direitag2
+	beq $t1,0x5F,direitag2
 	j direitagg2
 direitag2:
 	sb $t1,1605($a1)
@@ -1383,6 +1446,7 @@ direitagg2:
 cimag:	
 	addi $t9,$zero,0
 	addi $s0,$s0,1
+	beq $s0,10,saig
 	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 2, horizontal_mov
@@ -1413,7 +1477,7 @@ cimag:
 	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
 	beq $t1,0xFFFFFFFF,cimag2
-	beq $t1,0xFFFFFFF0,cimag2
+	beq $t1,0x5F,cimag2
 	j cimagg2
 cimag2:
 	sb $t1,1926($a1)
@@ -1439,6 +1503,7 @@ cimagg2:
 baixog:	
 	addi $t9,$zero,1
 	addi $s0,$s0,1
+	beq $s0,10,saig
 	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 3, horizontal_mov
@@ -1469,7 +1534,7 @@ baixog:
 	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
 	beq $t1,0xFFFFFFFF,baixog2
-	beq $t1,0xFFFFFFF0,baixog2
+	beq $t1,0x5F,baixog2
 	j baixogg2
 baixog2:
 	sb $t1,1606($a1)
@@ -1494,6 +1559,7 @@ baixogg2:
 esquerdag:
 	addi $t8,$zero,0
 	addi $s0,$s0,1
+	beq $s0,10,saig
 	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
 	beq $t3, 4, vertical_mov
@@ -1525,7 +1591,7 @@ esquerdag:
 	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
 	beq $t1,0xFFFFFFFF,esquerdag2
-	beq $t1,0xFFFFFFF0,esquerdag2
+	beq $t1,0x5F,esquerdag2
 	j esquerdagg2
 esquerdag2:
 	sb $t1,1606($a1)
@@ -1535,7 +1601,7 @@ esquerdag2:
 esquerdagg2:
 	lb $t1,1599($a1)
 	sw $t1,0($v0)
-	
+
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
@@ -1799,15 +1865,17 @@ fica_preso1:
 	sw $t1,0($t0)
 	
 	# Le a tecla do buffer e atualiza o movimento que sera feito pelos pacs
-	la $t1,0xFFFF0504
-	lw $t2,0($t1)       # Tecla lida
-	jal tecla
-	
-	# Sleep de tempo definido em velociade
-	la $t0,velocidade
-	lw $a0,0($t0)
-	addi $v0,$zero,32
-	syscall
+	lw $t7,velocidade
+ler:	beqz $t7,para_de_ler
+		la $t1,0xFFFF0504
+		lw $t2,0($t1)       # Tecla lida
+		jal tecla
+		addi $a0,$0,1
+		addi $v0,$zero,32
+		syscall
+		addi $t7,$t7,-1
+	j ler
+para_de_ler:
 	
 	lw $t0,players
 	la $t1,pac_position
@@ -1841,6 +1909,13 @@ dir:
 	sw $t1,0($t2)
 	la $t2,cor
 	addi $t1,$zero,0x77
+	la $t6,bixao
+	lw $t7,0($t6)
+	beq $t7,$0,dirr
+	add $t1,$zero,0xF5
+	addi $t7,$t7,-1
+	sw $t7,0($t6)
+dirr:
 	sw $t1,0($t2)
 	la $t2,mov
 	
@@ -1863,6 +1938,13 @@ dir2:
 	sw $t1,0($t2)
 	la $t2,cor
 	addi $t1,$zero,0x07
+	la $t6,bixao
+	lw $t7,4($t6)
+	beqz $t7,dirr2
+	add  $t1,$zero,0xF5
+	addi $t7,$t7,-1
+	sw $t7,4($t6)
+dirr2:
 	sw $t1,0($t2)
 	la $t2,mov
 movimenta2:	
@@ -1883,6 +1965,13 @@ dir3:
 	sw $t1,0($t2)
 	la $t2,cor
 	addi $t1,$zero,0x70
+	la $t6,bixao
+	lw $t7,8($t6)
+	beqz $t7,dirr3
+	add  $t1,$t1,2
+	add  $t1,$zero,0xF5
+	sw $t7,8($t6)
+dirr3:
 	sw $t1,0($t2)
 	la $t2,mov
 movimenta3:	
@@ -1903,6 +1992,13 @@ dir4:
 	sw $t1,0($t2)
 	la $t2,cor
 	addi $t1,$zero,0x1C
+	la $t6,bixao
+	lw $t7,12($t6)
+	beqz $t7,dirr4
+	addi $t7,$t7,-1
+	sw $t7,12($t6)
+	add  $t1,$zero,0xF5
+dirr4:
 	sw $t1,0($t2)
 	la $t2,mov
 movimenta4:	
