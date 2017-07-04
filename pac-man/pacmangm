@@ -1,5 +1,4 @@
 .data
- baseadd: .word 0xff000000 
  coordinates1: .word 159,0 ,  0,0 , 0,82 , 48,82 , 48,158 , 0,158 , 0,239 , 159,239
  coordinates2: .word 159,41, 148,41 , 148,5 , 3,5 , 3,78 , 51,78 , 51,161  
  , 3,161, 3,234 , 159,234 
@@ -44,8 +43,7 @@
  g_position: .word 0,0,0,0
  mov_antg: .word 0,0,0,0
  preso: .word 50
- comida: .word 0,0
- 
+ comida: .word 0,0,0,0
 .text
 inicio:
 
@@ -57,12 +55,19 @@ sw $0,4($t0)
 sw $0,8($t0)
 sw $0,12($t0)
 
+la $t0,comida
+sw $0,12($t0)
+sw $0,0($t0)
+nop
+sw $0,4($t0)
+sw $0,8($t0)
+
+
 la $t0,bixao
 sw $0,0($t0)
 sw $0,4($t0)
 sw $0,8($t0)
 sw $0,12($t0)
-
 
 jal main_menu
 
@@ -132,12 +137,12 @@ main_menu:
 loop_pra_nao_bugar:
 			addi $t5,$t5,-1
 			bnez $t5,loop_pra_nao_bugar
-		lw $t2,0($t1)       # Tecla lida
-		sw $0, 0($t1)
 		addi $v0,$0,32
 		addi $s0,$a0,0
-		addi $a0,$0,500
+		addi $a0,$0,1000
 		syscall
+		lw $t2,0($t1)       # Tecla lida
+		sw $0, 0($t1)
 		addi $a0,$s0,0 
 		beq $t2, 0xEA155E87, endpolling
 		bne $t2, 0xE41B5E87, notA
@@ -185,6 +190,7 @@ game_over:
 	addi $a1, $0, 125
 	addi $a2, $0, 120
 	addi $v0, $0, 104
+	addi $a3,$0,0x00FF
 	syscall
 	
 	la $t1,NOTASNO
@@ -437,7 +443,7 @@ funcao_ponto:
 	addi $at,$zero,320
 	mult $t0,$at # y *= 320
 	mflo $t0
-	lw $t1,baseadd #retorno recebe end base
+	addi $t1,$0,0xFF000000 #retorno recebe end base
 	add $t1,$t1,$t0
 	addi $t9,$t1, 0
 	addi $t0,$a0, 0 #reg reusado
@@ -943,6 +949,12 @@ msm_pac:
 	beq $t1,8,movimenta3
 	beq $t1,12,movimenta4
 
+# Repinta -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+repinta:
+	lw $a0,cor
+	jal pintapac
+	j prox_pac
+
 
 #Erro movimentacao pac -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Movimento atual faria o pac-man colidir, tenta realizar o movimento anterior
@@ -952,7 +964,7 @@ erro_dir:
 	la $t0,mov_ant
 	add $t0,$t0,$t1
 	lw $t1,0($t0)
-	beq $t1,$t2,prox_pac
+	beq $t1,$t2,repinta
 	la $t2,mov_ant
 	j msm_pac
 # Verifica colisao -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -975,6 +987,62 @@ se_mata2:
 	beq $t3,8,mata_p3
 	beq $t3,12,mata_p4
 
+# Bixao mata  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bixao_mata:
+	add $t3,$a1,$a3
+	addi $t3,$t3,321
+	addi $t6,$0,10
+	addi $s4,$0,0
+	lw $ra,-4($sp)
+loop_bixao_mata2:
+	addi $t7,$t3,10
+loop_bixao_mata:
+	beq $t3,$t7,sai_loop_bixao
+		lb $v0,0($t3)
+		bne $v0,0x77,nmata_p1
+		lw $t3,atpac
+		la $t6,pontos
+		add $t6,$t6,$t3
+		lw $t7,0($t6)
+		add $t7,$t7,10
+		sw $t7,0($t6)
+		j mata_p1
+nmata_p1:
+		bne $v0,0x07,nmata_p2
+		lw $t3,atpac
+		la $t6,pontos
+		add $t6,$t6,$t3
+		lw $t7,0($t6)
+		add $t7,$t7,10
+		sw $t7,0($t6)
+		j mata_p2
+nmata_p2:
+		bne $v0,0x70,nmata_p3
+		lw $t3,atpac
+		la $t6,pontos
+		add $t6,$t6,$t3
+		lw $t7,0($t6)
+		add $t7,$t7,10
+		sw $t7,0($t6)
+		j mata_p3
+nmata_p3:
+		bne $v0,0x1C,nmata_p4
+		lw $t3,atpac
+		la $t6,pontos
+		add $t6,$t6,$t3
+		lw $t7,0($t6)
+		add $t7,$t7,10
+		sw $t7,0($t6)
+		j mata_p4
+nmata_p4:
+		addi $t3,$t3,1
+	j loop_bixao_mata
+sai_loop_bixao:
+	addi $t6,$t6,-1
+	addi $t3,$t3,310
+	bnez $t6,loop_bixao_mata2
+	
+	jr $ra
 # Colidi no movimento -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
 mov_colide:
@@ -986,8 +1054,6 @@ mov_colide:
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,erro_dir
 	beq $v1,0x01,erro_dir
-	beq $v1,0x08,se_mata
-	
 	
 	add $a2,$a1,$s7
 	jal ve_se_bate
@@ -1003,20 +1069,46 @@ mov_colide2:
 	add $a2,$a1,$s6
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,erro_dir
-			
+
 	add $a2,$a1,$s7
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,erro_dir
-		
+	beq $v1,0x01,bixao_mata
+			
 	lw $ra,-4($sp)
 	jr $ra
 	
 # Verifica se come comida-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ponto_verif:
 	lb $t8,1926($a1)
+	
 	beq $t8,0x5F,ficar_bixao
 	
 	add $v0,$zero,$t8
+	
+	beqz $v0,naoponto
+	
+	sw $a0,-4($sp)
+	sw $a1,-8($sp)
+	sw $a2,-12($sp)
+	sw $a3,-16($sp)
+	sw $v0,-20($sp)
+	addi $sp,$sp,-20
+	
+	addi $a0,$0,70		
+	addi $a1,$0,10
+	addi $a2,$0,0
+	addi $a3,$0,127		
+	addi $v0,$0,31		
+	syscall
+	
+	addi $sp,$sp,20
+	lw $a0,-4($sp)
+	lw $a1,-8($sp)
+	lw $a2,-12($sp)
+	lw $a3,-16($sp)
+	lw $v0,-20($sp)
+naoponto:	
 	andi $v0,$v0,1
 	lw $v1,0($s5)
 	add $v0,$v0,$v1
@@ -1025,11 +1117,34 @@ ponto_verif:
 	jr $ra
 	
 ficar_bixao:
+
+	sw $a0,-4($sp)
+	sw $a1,-8($sp)
+	sw $a2,-12($sp)
+	sw $a3,-16($sp)
+	sw $v0,-20($sp)
+	addi $sp,$sp,-20
+	
+	addi $a0,$0,90		
+	addi $a1,$0,20
+	addi $a2,$0,0
+	addi $a3,$0,127		
+	addi $v0,$0,31		
+	syscall
+	
+	addi $sp,$sp,20
+	lw $a0,-4($sp)
+	lw $a1,-8($sp)
+	lw $a2,-12($sp)
+	lw $a3,-16($sp)
+	lw $v0,-20($sp)
+	
 	lw $t7,atpac
 	la $t6,bixao
 	add $t6,$t6,$t7
 	addi $t5,$0,50
 	sw $t5,0($t6)
+	
 	jr $ra 	
 # Movimenta o Pacman  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
@@ -1751,6 +1866,7 @@ loop_jogo:
 	jal pintapac
 	
 loop:	
+	
 	lw $a0,pontos
 	addi $a3,$0,0x0077
 	addi $a1,$0,20
@@ -1863,7 +1979,7 @@ fica_preso1:
 	lw $t1,0($t0)
 	xori $t1,$t1,1
 	sw $t1,0($t0)
-	
+
 	# Le a tecla do buffer e atualiza o movimento que sera feito pelos pacs
 	lw $t7,velocidade
 ler:	beqz $t7,para_de_ler
