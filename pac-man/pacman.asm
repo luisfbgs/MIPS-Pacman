@@ -68,7 +68,7 @@ main_menu:
 	#a2 = cor
 	
 	la $a0, menu_triangle_1
-	li $a2, 0x3F
+	addi $a2, $0, 0x3F
 	jal funcao_reta
 	addi $a0, $a0, 8
 	jal funcao_reta
@@ -76,7 +76,7 @@ main_menu:
 	jal funcao_reta
 	
 	la $a0, menu_triangle_2
-	li $a2, 0x3F
+	addi $a2, $0, 0x3F
 	jal funcao_reta
 	addi $a0, $a0, 8
 	jal funcao_reta
@@ -87,6 +87,7 @@ main_menu:
 	la $t3, players
 	lw $a0, 0($t3)
 	addi $s0, $a0, 0
+	jal print_number_players
 	polling:
 		sw $a0,0($t3)
 		beq $s0, $a0, n_mudou
@@ -132,33 +133,39 @@ print_number_players:
 	
 	addi $t8, $0, 0
 	addi $t9, $0, 30
-		addi $t4, $0, 102
-		mul $t1, $t4, 320
-		addi $t1, $t1, 140
-		add $t1, $t1, $t0
-		addi $t4, $0, 0
-		addi $t5, $0, 30
+	addi $t4, $0, 102
+	addi $t1, $0, 320
+	mult $t1, $t4
+	mflo $t1
+	addi $t1, $t1, 140
+	add $t1, $t1, $t0
+	addi $t4, $0, 0
+	addi $t5, $0, 30
+
 	loop_black:
 	beq $t8, $t9, emb
-	sw $0, 0($t1)
-	sw $0, 4($t1)
-	sw $0, 8($t1)
-	sw $0, 12($t1)
-	sw $0, 16($t1)
-	sw $0, 20($t1)
-	sw $0, 24($t1)
-	sw $0, 28($t1)
-	sw $0, 32($t1)
-	sw $0, 36($t1)
-	addi $t1, $t1, 320
-	addi $t8, $t8, 1
-	j loop_black
+		sw $0, 0($t1)
+		sw $0, 4($t1)
+		sw $0, 8($t1)
+		sw $0, 12($t1)
+		sw $0, 16($t1)
+		sw $0, 20($t1)
+		sw $0, 24($t1)
+		sw $0, 28($t1)
+		sw $0, 32($t1)
+		sw $0, 36($t1)
+		addi $t1, $t1, 320
+		addi $t8, $t8, 1
+		j loop_black
 	emb:
 	
+	addi $t4, $0, 102
+
+	addi $t1, $0, 320
+	mult $t1, $t4
+	mflo $t1
 	
 	bne $a0, 1, notOne
-		addi $t4, $0, 102
-		mul $t1, $t4, 320
 		addi $t1, $t1, 156
 		add $t1, $t1, $t0
 		addi $t4, $0, 0
@@ -174,8 +181,6 @@ print_number_players:
 		jr $ra
 	notOne:
 	bne $a0, 2, notTwo
-		addi $t4, $0, 102
-		mul $t1, $t4, 320
 		addi $t1, $t1, 148
 		add $t1, $t1, $t0
 		addi $t4, $0, 0
@@ -194,8 +199,6 @@ print_number_players:
 	
 	notTwo:
 	bne $a0, 3, notThree
-		addi $t4, $0, 102
-		mul $t1, $t4, 320
 		addi $t1, $t1, 144
 		add $t1, $t1, $t0
 		addi $t4, $0, 0
@@ -216,9 +219,7 @@ print_number_players:
 	
 	notThree: 
 	bne $a0, 4, fudeu
-	li $t6, 0xFF
-		addi $t4, $0, 102
-		mul $t1, $t4, 320
+	addi $t6, $0, 0xFF
 		addi $t1, $t1, 144
 		add $t1, $t1, $t0
 		addi $t7, $t1, 0
@@ -570,7 +571,7 @@ mapa:
 	addi $s2,$zero,0 		#s2 recebe 0 se for vertical e 1,vertical 
 	
 	la $a0,food_coordinate1
-	li $a2,-1
+	addi $a2, $0, -1
 	addi $s1,$zero,5
 	jal loop_food
 	
