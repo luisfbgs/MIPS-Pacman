@@ -8,14 +8,17 @@
  coordinates5: .word 135,18 , 64,18 , 64,41 , 135,41 , 135,18
  coordinates6: .word 64,54 , 64,113 , 75,113 , 75,89 , 135,89 , 135,78 , 75,78 , 75,54 , 64,54
  coordinates7: .word 159,54 , 88,54 , 88,65 , 148,65 , 148,89 , 159,89
- coordinates8: .word 151,102 , 88,102 , 88,161 , 159,161
+ coordinates8: .word 159,102 , 88,102 , 88,161 , 159,161
  coordinates9: .word 151,102 , 151,109 , 97,109 , 97,155 , 159,155
  coordinates10: .word 64,126 , 64,174 , 16,174 , 16,185 , 75,185, 75,126 , 64,126
  coordinates11: .word 166,174 , 88,174 , 88,185 , 148,185 , 148,221 , 166,221
  coordinates12: .word 16,198 , 51,198 , 51,221 , 16,221 , 16,198
  coordinates13: .word 64,198 , 135,198 , 135,221 , 64,221 , 64,198
+ menu_triangle_1: .word 139,103, 128,117, 139,132, 139,103
+ menu_triangle_2: .word 180,103, 192,117, 180,132, 180,103
  food_coordinate1: .word 9,23 , 57,23 , 141,23 , 81,47 , 9,167 , 141,191 , 57,203
  food_coordinate2: .word 9,11 , 9,47 , 9,71 , 9,167 , 9,191 , 9,227 , 93,71
+ food3: .word 57,119 , 129,47 , 141,191
  espelho: .word 1
  
  # Define quantos pac-mans vao ter no jogo (1~4)
@@ -29,6 +32,7 @@
  atpac: .word 0
  pac_position: .word 0,0,0,0
  cor: .word 0
+ morto: .word -1,-1,-1,-1
  
  g_position: .word 0,0,0,0
  mov_antg: .word 0,0,0,0
@@ -37,13 +41,284 @@
  
 .text
 
+jal main_menu
+
 addi $t0,$zero,1
 la $t1,espelho
 sw $t0,0($t1)
 
-li $sp,0x10011ffc
+addi $t0,$zero,-1
+la $t1,morto
+sw $t0,0($t1)
+sw $t0,4($t1)
+sw $t0,8($t1)
+sw $t0,12($t1)
 
 j mapa
+
+# Menu inicial
+
+main_menu:
+
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+
+	jal preenchetela
+	#a0 = Endereco das coordenadas
+	#a2 = cor
+	
+	la $a0, menu_triangle_1
+	addi $a2, $0, 0x3F
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	
+	la $a0, menu_triangle_2
+	addi $a2, $0, 0x3F
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	addi $a0, $a0, 8
+	jal funcao_reta
+	
+	la $t1,0xFF100000
+	la $t3, players
+	lw $a0, 0($t3)
+	addi $s0, $a0, 0
+	jal print_number_players
+	polling:
+		sw $a0,0($t3)
+		beq $s0, $a0, n_mudou
+		jal print_number_players
+		addi $s0, $a0, 0
+		n_mudou:
+		la $t1,0xFFFF0100 # no mars tem que mudar isso
+		addi $t5,$0,1000
+loop_pra_nao_bugar:
+			addi $t5,$t5,-1
+			bnez $t5,loop_pra_nao_bugar
+		lb $t2,4($t1)       # Tecla lida
+		sb $0, 4($t1)
+		beq $t2, 0x1d, endpolling
+		bne $t2, 0x1c, notA
+		
+		addi $a0, $a0, -1
+		bne $a0, $0, polling
+		addi $a0, $0, 4
+		sw $a0, 0($t3)	
+		
+		notA: bne $t2, 0x23, notD
+		
+		addi $a0, $a0, 1
+		bne $a0, 5, polling
+		addi $a0, $0, 1
+		sw $a0, 0($t3)
+	
+		notD: j polling
+	endpolling:
+	
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
+	
+	
+# imprime numero de players
+
+print_number_players: 
+
+	li $t0, 0xFF000000
+	li $t2, 0xFFFFFFFF
+	
+	addi $t8, $0, 0
+	addi $t9, $0, 30
+	addi $t4, $0, 102
+	addi $t1, $0, 320
+	mult $t1, $t4
+	mflo $t1
+	addi $t1, $t1, 140
+	add $t1, $t1, $t0
+	addi $t4, $0, 0
+	addi $t5, $0, 30
+
+	loop_black:
+	beq $t8, $t9, emb
+		sw $0, 0($t1)
+		sw $0, 4($t1)
+		sw $0, 8($t1)
+		sw $0, 12($t1)
+		sw $0, 16($t1)
+		sw $0, 20($t1)
+		sw $0, 24($t1)
+		sw $0, 28($t1)
+		sw $0, 32($t1)
+		sw $0, 36($t1)
+		addi $t1, $t1, 320
+		addi $t8, $t8, 1
+		j loop_black
+	emb:
+	
+	addi $t4, $0, 102
+
+	addi $t1, $0, 320
+	mult $t1, $t4
+	mflo $t1
+	
+	bne $a0, 1, notOne
+		addi $t1, $t1, 156
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnotone:
+		beq $t4, $t5, endloopnotone
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnotone		
+		endloopnotone:
+		jr $ra
+	notOne:
+	bne $a0, 2, notTwo
+		addi $t1, $t1, 148
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnottwo:
+		beq $t4, $t5, endloopnottwo
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			sw $t2, 16($t1)
+			sw $t2, 20($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnottwo		
+		endloopnottwo:
+		jr $ra
+	
+	notTwo:
+	bne $a0, 3, notThree
+		addi $t1, $t1, 144
+		add $t1, $t1, $t0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnot3:
+		beq $t4, $t5, endloopnot3
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			sw $t2, 12($t1)
+			sw $t2, 16($t1)
+			sw $t2, 24($t1)
+			sw $t2, 28($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnot3		
+		endloopnot3:
+		jr $ra
+	
+	notThree: 
+	bne $a0, 4, fudeu
+	addi $t6, $0, 0xFF
+		addi $t1, $t1, 144
+		add $t1, $t1, $t0
+		addi $t7, $t1, 0
+		addi $t4, $0, 0
+		addi $t5, $0, 30
+		loopnot4:
+		beq $t4, $t5, endloopnot4
+			sw $t2, 0($t1)
+			sw $t2, 4($t1)
+			addi $t1, $t1, 320
+			addi $t4, $t4, 1
+			j loopnot4		
+		endloopnot4:
+	
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_1:
+		beq $t8, $t9, em1
+		sb $t6, 10($t7)
+		sb $t6, 11($t7)
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		sb $t6, 28($t7)
+		sb $t6, 29($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_1
+	em1:
+	addi $t8, $0, 7
+	addi $t9, $0, 0
+	loop_menu_2:
+		beq $t8, $t9, em2
+		sb $t6, 11($t7)
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 17($t7)
+		sb $t6, 22($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		sb $t6, 28($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_2
+	em2:
+	addi $t8, $0, 6
+	addi $t9, $0, 0
+	loop_menu_3:
+		beq $t8, $t9, em3
+		sw $t2, 12($t7)
+		sb $t6, 16($t7)
+		sb $t6, 17($t7)
+		sb $t6, 18($t7)
+		sb $t6, 21($t7)
+		sb $t6, 22($t7)
+		sb $t6, 23($t7)
+		sw $t2, 24($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_3
+	em3:
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_4:
+		beq $t8, $t9, em4
+		sb $t6, 13($t7)
+		sb $t6, 14($t7)
+		sb $t6, 15($t7)
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		sb $t6, 24($t7)
+		sb $t6, 25($t7)
+		sb $t6, 26($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_4
+	em4:
+	addi $t8, $0, 5
+	addi $t9, $0, 0
+	loop_menu_5:
+		beq $t8, $t9, em5
+		sb $t6, 15($t7)
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		sb $t6, 24($t7)
+		addi $t9, $t9, 1
+		addi $t7, $t7, 320
+		j loop_menu_5
+	em5:
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+		addi $t7, $t7, 320
+		sw $t2, 16($t7)
+		sw $t2, 20($t7)
+	
+	fudeu:
+
+	jr $ra
 
 #Preenche tela de preto -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  preenchetela:	
@@ -68,17 +343,17 @@ funcao_ponto:
 	sw $t1, 4($sp)
 	sw $t9, 8($sp)
 	#Uso do t0(variaveis) e t1(endere?o)
-	move $t0,$a1
+	add $t0,$0,$a1
 	addi $at,$zero,320
 	mult $t0,$at # y *= 320
 	mflo $t0
 	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$t0
-	move $t9,$t1
-	move $t0,$a0 #reg reusado
+	add $t9,$0,$t1
+	add $t0,$0,$a0 #reg reusado
 	add $t1,$t1,$t0
 	sb $a2,0($t1)
-	move $t1,$t9
+	add $t1,$0,$t9
 	la $t9,espelho
 	lw $t9,0($t9)
 	beqz $t9,saiponto
@@ -139,7 +414,7 @@ funcao_reta:
 		mflo $t4
 		j endif_fr_3
  	else_fr_3: 
- 		move $t4,$t0 #err = dx
+ 		add $t4,$0,$t0 #err = dx
  	endif_fr_3:
 
 	sra $t4,$t4,1 # err = err/2 
@@ -294,8 +569,9 @@ mapa:
 	
 	#vertical aqui
 	addi $s2,$zero,0 		#s2 recebe 0 se for vertical e 1,vertical 
+	
 	la $a0,food_coordinate1
-	la $a2,0xFFFFFFFF
+	addi $a2, $0, -1
 	addi $s1,$zero,5
 	jal loop_food
 	
@@ -353,6 +629,20 @@ mapa:
 	addi $a0,$a0,8
 	addi $s1,$zero,5
 	jal loop_food
+	
+	la $a0,food3
+	addi $a2,$0,0x0f
+	addi $s1,$zero,1
+	jal loop_food
+	
+	addi $a0,$a0,8
+	addi $s1,$zero,1
+	jal loop_food
+	
+	addi $a0,$a0,8
+	addi $s1,$zero,1
+	jal loop_food
+	
 	j loop_jogo
 
 #Colide ------------------------------------------------------------------------------------------------------------------------------------------------------------	
@@ -513,23 +803,28 @@ sailimpaloop:
 	addi $t3,$t3,308
 	bne $t6,$zero,limpaloop
 	
-	addi $t3,$zero,0xFFFFFFFF
+	addi $t4,$zero,0x08
+	addi $t3,$zero,0xFFFFFFc0
 	lb $t7,-314($a1)
-	bne $t7,$t3,prox1
-	sb $t3,6($a1)
-	sb $t3,5($a1)
+	beq $t7,$t3,prox1
+	beq $t7,$t4,prox1
+	sb $t7,6($a1)
+	sb $t7,5($a1)
 prox1:	lb $t7,3846($a1)
-	bne $t7,$t3,prox2
-	sb $t3,3526($a1)
-	sb $t3,3525($a1)
+	beq $t7,$t3,prox2
+	beq $t7,$t4,prox2
+	sb $t7,3526($a1)
+	sb $t7,3525($a1)
 prox2:	lb $t7,1599($a1)	
-	bne $t7,$t3,prox3
-	sb $t3,1600($a1)
-	sb $t3,1920($a1)
+	beq $t7,$t3,prox3
+	beq $t7,$t4,prox3
+	sb $t7,1600($a1)
+	sb $t7,1920($a1)
 prox3:	lb $t7,1932($a1)	
-	bne $t7,$t3,prox4
-	sb $t3,1611($a1)
-	sb $t3,1931($a1)
+	beq $t7,$t3,prox4
+	beq $t7,$t4,prox4
+	sb $t7,1611($a1)
+	sb $t7,1931($a1)
 prox4:
 	jr $ra
 
@@ -574,10 +869,6 @@ erro_dir:
 ve_se_bate:
 	addi $v1,$zero,0
 	lb $a0,0($a2)
-	andi $a0,$a0,0xFF
-	bnez $a0,bate
-	jr $ra
-bate:
 	add $v1,$zero,$a0
 	jr $ra
 
@@ -761,14 +1052,56 @@ direita2:
 	addi $a2,$zero,0
 		
 	jal boca
-	j muda_boca
+	j muda_boca	
 ################################################################################################################################################################################################################################################################################################################################
+# Ve a direcao que o pac vai andar  ------------------------------------------------------------------------------------------------------------------------------------------------------------	
+ve_direcao_pac:
+	beq $t2,1,cima
+	beq $t2,2,baixo
+	beq $t2,3,direita
+	beq $t2,4,esquerda
+	
+	jr $ra
+
+# Mata pac ------------------------------------------------------------------------------------------------------------------------------------------------------------	
+mata_p1:
+	la $t3,morto
+	addi $t5,$zero,0
+	sw $t5,0($t3)
+	
+	addi $t3,$a1,965
+	jr $ra
+	
+mata_p2:
+	la $t3,morto
+	addi $t5,$zero,4
+	sw $t5,4($t3)
+	
+	addi $t3,$a1,965
+	jr $ra	
+
+mata_p3:
+	la $t3,morto
+	addi $t5,$zero,8
+	sw $t5,8($t3)
+	
+	addi $t3,$a1,965
+	jr $ra
+	
+mata_p4:
+	la $t3,morto
+	addi $t5,$zero,12
+	sw $t5,12($t3)
+	
+	addi $t3,$a1,965
+	jr $ra	
 #$a1 = endereco, $a0 = cor
 #Pinta fantasma ------------------------------------------------------------------------------------------------------------------------------------------------------------	
 pintag:
 	addi $t6,$zero,10
 	addi $t3,$a1,321
 	addi $t5,$zero,6
+	addi $s4,$zero,0
 pinta_gloop:
 	addi $t6,$t6,-1
 	addi $t7,$t3,10
@@ -777,6 +1110,8 @@ pinta_gloop:
 	sub $t7,$t7,$t8
 pinta_gloop2:    
 	beq $t3,$t7,saipinta_gloop
+	lb $a2,0($t3)
+	or $s4,$a2,$s4
 	sb $a0,0($t3)
 	addi $t3,$t3,1
 	j pinta_gloop2
@@ -789,13 +1124,30 @@ j_pinta_gloop:
 	bne $t6,$zero,pinta_gloop
 	
 	sw $ra,-4($sp)
-	addi $a2,$zero,0x02
+	addi $a2,$zero,0x08
 	jal colide
 	lw $ra,-4($sp)
 	
-	addi $t3,$a1,964
-	sb $zero,0($t3)
-	sb $zero,3($t3)
+	addi $t3,$a1,965
+	addi $t4,$zero,0xFF
+	sb $t4,-1($t3)
+	sb $t4,-321($t3)
+	sb $t4,-320($t3)
+	sb $t4,320($t3)
+	sb $t4,319($t3)
+	
+	sb $t4,2($t3)
+	sb $t4,-318($t3)
+	sb $t4,-317($t3)
+	sb $t4,323($t3)
+	sb $t4,322($t3)
+	sb $t4,0($t3)
+	sb $t4,3($t3)
+	
+	beq $s4,0x77,mata_p1
+	beq $s4,0x07,mata_p2
+	beq $s4,0x70,mata_p3
+	beq $s4,0x1C,mata_p4
 	
 	jr $ra
 
@@ -805,11 +1157,28 @@ j_pinta_gloop:
 # $a0 = posicao do pac a perseguir
 # $a3 = cor do fantasma
 # $v0 = endereco que indica se tinha comida onde o fantasma esta
+# $s3 = -1 se o fantasma que ele persegue esta vivo o numero do fantasma caso contrario
 busca_fantasma:
 	addi $sp,$sp,-4
 	sw $ra,0($sp)
 	
-	move $t3, $a0
+	la $t0,g_position
+	add $t0,$t0,$t3
+	la $t2,mov_antg
+	add $t2,$t2,$t3
+	la $a0, pac_position
+	add $a0,$a0,$t3
+	lw $a0,0($a0)
+	la $v0,comida
+	add $v0,$v0,$t3
+	la $s3,morto
+	add $s3,$s3,$t3
+	lw $s3,0($s3)
+	
+	# $s0 = quantidade de direcoes tentadas
+	addi $s0,$zero,0
+
+	add $t3,$0, $a0
 	subi $t3, $t3, 0xff000000
 	addi $t6, $0, 320
 	div $t4, $t3, $t6
@@ -836,8 +1205,25 @@ busca_fantasma:
 	
 
 	lw $a1, 0($t0)
+	
+	# Verifica se o fantasma a ser perseguido ja esta morto
+	beq $s3,-1,nao_ta_morto
+	
+	# Se o fantasma estiver morto realiza o movimento que o jogador realizaria
+	la $t1,mov
+	add $t1,$s3,$t1
+	lw $s3,0($t1)
+	
+	beq $s3,1,cimag
+	beq $s3,2,baixog
+	beq $s3,3,direitag
+	beq $s3,4,esquerdag
+	
+nao_ta_morto:
+	
 	# if abs($t8) > abs($t9) movimento horizontal
 	ble $t6, $t7, vertical_mov
+	horizontal_mov:	
 		# $t8 > 0 significa que o fantasma esta a direita do pac
 		bgtz $t8, esquerdag
 		j direitag
@@ -847,26 +1233,42 @@ busca_fantasma:
 		bgtz $t9, cimag
 		j baixog
 	
-	direitag: 
+direitag:
+	addi $t8,$zero,1
+	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior 
 	lw $t3, 0($t2)
-	beq $t3, 1, cimag
-	addi $t3,$zero,-1
+	beq $t3, 1, vertical_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,12
 	jal ve_se_bate
-	bnez $v1,cimag
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,3532
 	jal ve_se_bate
-	bnez $v1,cimag
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
+	
+	addi $a2,$a1,24
+	jal ve_se_bate
+	beq $v1,0x08,vertical_mov
+	addi $a2,$a1,7064
+	jal ve_se_bate
+	beq $v1,0x08,vertical_mov
 	
 	jal limpa	
 	
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,direitag2
 	sb $t1,1605($a1)
 	sb $t1,1925($a1)
 	sw $zero,0($v0)
-direitag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,1932($a1)
 	sw $t1,0($v0)
 
@@ -876,28 +1278,48 @@ direitag2:
 	addi $t3,$zero,4
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,0($t3)
+	sb $zero,3($t3)
+	
 	j saig
 	
 cimag:	
+	addi $t9,$zero,0
+	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
-	beq $t3, 2, esquerdag
-	addi $t3,$zero,-1
+	beq $t3, 2, horizontal_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,-320
 	jal ve_se_bate
-	bnez $v1,esquerdag
+	beq $v1,0xFFFFFFC0,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,-309
 	jal ve_se_bate
-	bnez $v1,esquerdag
+	beq $v1,0xFFFFFFC0,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	
+	addi $a2,$a1,-640
+	jal ve_se_bate
+	beq $v1,0x08,horizontal_mov
+	addi $a2,$a1,-618
+	jal ve_se_bate
+	beq $v1,0x08,horizontal_mov	
+				
 	jal limpa	
 	
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,cimag2
 	sb $t1,1926($a1)
 	sb $t1,1925($a1)
 	sw $zero,0($v0)
-cimag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,-314($a1)
 	sw $t1,0($v0)
 	
@@ -907,28 +1329,48 @@ cimag2:
 	addi $t3,$zero,3
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,-321($t3)
+	sb $zero,-318($t3)
+	
 	j saig
 	
 baixog:	
+	addi $t9,$zero,1
+	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
-	beq $t3, 3, direitag
-	addi $t3,$zero,-1
+	beq $t3, 3, horizontal_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,3840
 	jal ve_se_bate
-	bnez $v1,direitag
+	beq $v1,0xFFFFFFC0,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,3851
 	jal ve_se_bate
-	bnez $v1,direitag
+	beq $v1,0xFFFFFFC0,horizontal_mov
+	beq $v1,0x08,horizontal_mov
+	
+	addi $a2,$a1,7680
+	jal ve_se_bate
+	beq $v1,0x08,horizontal_mov
+	addi $a2,$a1,7702
+	jal ve_se_bate
+	beq $v1,0x08,horizontal_mov
 	
 	jal limpa	
-	
+
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,baixog2
-	sb $t3,1606($a1)
-	sb $t3,1605($a1)
+	sb $t1,1606($a1)
+	sb $t1,1605($a1)
 	sw $zero,0($v0)
-baixog2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,3846($a1)
 	sw $t1,0($v0)
 	
@@ -938,35 +1380,73 @@ baixog2:
 	addi $t3,$zero,2
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,320($t3)
+	sb $zero,323($t3)
 	j saig
 	
 esquerdag:
+	addi $t8,$zero,0
+	addi $s0,$s0,1
+	# Evita fazer o movimento contrario ao anterior
 	lw $t3, 0($t2)
-	beq $t3, 4, baixog
-	addi $t3,$zero,-1
+	beq $t3, 4, vertical_mov
+	# Caso ja tenham sido tentadas as 4 direcoes permite o movimento contrario
+	srl $s1,$s0,2
+	sll $s1,$s1,3
+	sub $t3,$t3,$s1
 	sw $t3,0($t2)
+	
 	addi $a2,$a1,-1
 	jal ve_se_bate
-	bnez $v1,baixog
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,3519
 	jal ve_se_bate
-	bnez $v1,baixog
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
 	
-	jal limpa	
+	addi $a2,$a1,-2
+	jal ve_se_bate
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
+	addi $a2,$a1,7038
+	jal ve_se_bate
+	beq $v1,0xFFFFFFC0,vertical_mov
+	beq $v1,0x08,vertical_mov
+	
+	jal limpa
+	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
 	lw $t1,0($v0)
-	beqz $t1,esquerdag2
 	sb $t1,1606($a1)
 	sb $t1,1926($a1)
 	sw $zero,0($v0)
-esquerdag2:
+	# Verifica se o fantasma vai pra cima de uma comida
 	lb $t1,1599($a1)
 	sw $t1,0($v0)
+	
 	addi $a1,$a1,-6
 	sw $a1,0($t0)
 	add $a0,$zero,$a3
 	addi $t3,$zero,1
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $a3,0($t3)
+	sb $a3,3($t3)
+	sb $a3,-320($t3)
+	sb $a3,-317($t3)
+	sb $a3,320($t3)
+	sb $a3,323($t3)
+	sb $t4,-2($t3)
+	sb $t4,1($t3)
+	sb $t4,-322($t3)
+	sb $t4,-319($t3)
+	sb $t4,318($t3)
+	sb $t4,321($t3)
+	sb $zero,-2($t3)
+	sb $zero,1($t3)
+	
 	j saig
 		
 saig:
@@ -977,46 +1457,48 @@ saig:
 #Armazena tecla lida ------------------------------------------------------------------------------------------------------------------
 teclap1: 
 	la $t3,mov
-	sw $t2,0($t3)
+	sw $t0,0($t3)
 	j sai_tecla
 	
 teclap2:
 	la $t3,mov
-	sw $t2,4($t3)
+	sw $t0,4($t3)
 	j sai_tecla
 teclap3:
 	la $t3,mov
-	sw $t2,8($t3)
+	sw $t0,8($t3)
 	j sai_tecla
 teclap4:
 	la $t3,mov
-	sw $t2,12($t3)
+	sw $t0,12($t3)
 	j sai_tecla
 
 tecla:	
-	# Pac-man amarelo
-	beq $t2,0x1D,teclap1	# cima - w
-	beq $t2,0x1B,teclap1	# baixo - s
-	beq $t2,0x23,teclap1	# direita - d
-	beq $t2,0x1C,teclap1	# esquerda - a
 	
-	# Pac-man vermelho
-	beq $t2,0x43,teclap2	# cima - i
-	beq $t2,0x42,teclap2	# baixo - k
-	beq $t2,0x4b,teclap2	# direita - l
-	beq $t2,0x3b,teclap2	# esquerda - j
+	addi $t0,$zero,1
+	beq $t2,119,teclap1	# cima - w
+	beq $t2,105,teclap2	# cima - i
+	beq $t2,56,teclap3	# cima - 8
+	beq $t2,102,teclap4	# cima - f
 	
-	# Pac-man verde
-	beq $t2,0x75,teclap3	# cima - 8
-	beq $t2,0x72,teclap3	# baixo - 5
-	beq $t2,0x74,teclap3	# direita - 6
-	beq $t2,0x6B,teclap3	# esquerda - 4
-
-	# Pac-man marrom
-	beq $t2,0x2B,teclap4	# cima - f
-	beq $t2,0x2A,teclap4	# baixo - v
-	beq $t2,0x32,teclap4	# direita - b
-	beq $t2,0x21,teclap4	# esquerda - c
+	addi $t0,$zero,2
+	beq $t2,115,teclap1	# baixo - s
+	beq $t2,107,teclap2	# baixo - k
+	beq $t2,53,teclap3	# baixo - 5
+	beq $t2,118,teclap4	# baixo - v
+	
+	addi $t0,$zero,3
+	beq $t2,100,teclap1	# direita - d
+	beq $t2,108,teclap2	# direita - l
+	beq $t2,54,teclap3	# direita - 6
+	beq $t2,98,teclap4	# direita - b
+	
+	addi $t0,$zero,4
+	beq $t2,97,teclap1	# esquerda - a
+	beq $t2,106,teclap2	# esquerda - j
+	beq $t2,52,teclap3	# esquerda - 4
+	beq $t2,99,teclap4	# esquerda - c
+	
 sai_tecla: 
 	jr $ra
 	
@@ -1026,24 +1508,35 @@ loop_jogo:
 	sw $zero,0($t0)
 	
 	# Pinta o fantasma vermelho dentro da prisao
-	lw $a1,baseadd
-	addi $a1,$a1,36628 
+	addi $a1,$0,4278226708 
 	la $t1,g_position
 	sw $a1,0($t1)
 	addi $a0,$zero,0x0f
 	jal pintag
 	
-	# Pinta o fantasma verde dentro da prisao
-	lw $a1,baseadd
-	addi $a1,$a1,36640 
+	# Pinta o fantasma roxo dentro da prisao
+	addi $a1,$0,4278226720 
 	la $t1,g_position
 	sw $a1,4($t1)
-	addi $a0,$zero,0xc0
+	addi $a0,$zero,0x8a
 	jal pintag	
 	
+	# Pinta o fantasma rosa dentro da prisao
+	addi $a1,$0,4278230560 
+	la $t1,g_position
+	sw $a1,8($t1)
+	addi $a0,$zero,0x8f
+	jal pintag
+	
+	# Pinta o fantasma azul dentro da prisao
+	addi $a1,$0,4278230548 
+	la $t1,g_position
+	sw $a1,12($t1)
+	addi $a0,$zero,0x99
+	jal pintag
+	
 	# Pinta o pac amarelo em sua posicao inicial, $a1 = endereco, $a0 = cor
-	lw $a1,baseadd
-	addi $a1,$a1,1924
+	addi $a1,$0,4278192004
 	la $t1,pac_position
 	sw $a1,0($t1)
 	addi $a0,$zero,0x77
@@ -1054,8 +1547,7 @@ loop_jogo:
 	blt $t0,2,loop
 	
 	# Pinta o pac vermelho em sua posicao inicial, $a1 = endereco, $a0 = cor
-	lw $a1,baseadd
-	addi $a1,$a1,2224
+	addi $a1,$0,4278192304
 	la $t1,pac_position
 	sw $a1,4($t1)
 	addi $a0,$zero,0x07
@@ -1065,8 +1557,7 @@ loop_jogo:
 	blt $t0,3,loop
 	
 	# Pinta o pac verde em sua posicao inicial, $a1 = endereco, $a0 = cor
-	lw $a1,baseadd
-	addi $a1,$a1,71044
+	addi $a1,$0,4278261124
 	la $t1,pac_position
 	sw $a1,8($t1)
 	addi $a0,$zero,0x70
@@ -1076,8 +1567,7 @@ loop_jogo:
 	blt $t0,4,loop
 	
 	# Pinta o pac marrom em sua posicao inicial, $a1 = endereco, $a0 = cor
-	lw $a1,baseadd
-	addi $a1,$a1,71344
+	addi $a1,$0,4278261424
 	la $t1,pac_position
 	sw $a1,12($t1)
 	addi $a0,$zero,0x1C
@@ -1087,58 +1577,72 @@ loop:
 	# Verifica se o fantasma vermelho esta preso, subtrai em 1 o tempo caso esteja, valor em preso > 0
 	# e o movimenta caso contrario.
 	lw $t1,preso
-	la $t0,g_position
-	la $t2,mov_antg
-	addi $a3,$zero,0x0f
 	bgtz $t1,solta1
 	
 	#movimento fantasma vermelho
-	lw $a0, pac_position
 	addi $a3, $zero, 0x07
-	la $v0,comida
+	addi $t3,$zero,0
 	jal busca_fantasma
 	
-	#movimento fantasma verde
-	la $a0, pac_position
-	lw $a0, 4($a0)
-	la $t0,g_position
-	addi $t0, $t0, 4
-	addi $t2, $t2, 4
-	addi $a3, $zero, 0xc0
-	la $v0,comida
-	addi $v0,$v0,4
+	#movimento fantasma roxo
+	addi $a3, $zero, 0x8a
+	addi $t3,$zero,4
 	jal busca_fantasma
+	
+	#movimento fantasma rosa
+	addi $a3, $zero, 0x8f
+	addi $t3,$zero,8
+	jal busca_fantasma
+	
+	#movimento fantasma azul
+	addi $a3, $zero, 0x99
+	addi $t3,$zero,12
+	jal busca_fantasma
+
+	j fica_preso1
 solta1:	
 	addi $t1,$t1,-1
 	sw $t1,preso
 	bnez $t1,fica_preso1
 	
 	# movimento fantasma vermelho
+	la $t0,g_position
 	lw $a1,0($t0)
 	jal limpa
-	lw $a1,baseadd
-	addi $a1,$a1,28948
-	lw $a0, pac_position
+	addi $a1,$0,4278219028
 	sw $a1,0($t0)
 	addi $a3, $zero, 0x07
-	la $v0,comida
+	addi $t3,$zero,0
 	jal busca_fantasma
 	
-	# movimento fantasma verde
+	# movimento fantasma roxo
+	la $t0,g_position
 	lw $a1,4($t0)
 	jal limpa
-	lw $a1,baseadd
-	addi $a1,$a1,28954
-	la $a0, pac_position
-	lw $a0, 4($a0)
+	addi $a1,$0,4278219034
+	sw $a1,4($t0)
+	addi $a3, $zero, 0x8a
+	addi $t3,$zero,4
+	jal busca_fantasma
+	
+	# movimento fantasma rosa
 	la $t0,g_position
-	la $t2,mov_antg
-	addi $t0, $t0, 4
-	addi $t2, $t2, 4
-	addi $a3, $zero, 0xc0
-	sw $a1,0($t0)
-	la $v0,comida
-	addi $v0,$v0,4
+	lw $a1,8($t0)
+	jal limpa
+	addi $a1,$0,4278242062
+	sw $a1,8($t0)
+	addi $a3, $zero, 0x8f
+	addi $t3,$zero,8
+	jal busca_fantasma
+	
+	# movimento fantasma azul
+	la $t0,g_position
+	lw $a1,12($t0)
+	jal limpa
+	addi $a1,$0,4278242074
+	sw $a1,12($t0)
+	addi $a3, $zero, 0x99
+	addi $t3,$zero,12
 	jal busca_fantasma
 	
 fica_preso1:
@@ -1148,27 +1652,45 @@ fica_preso1:
 	lw $t1,0($t0)
 	xori $t1,$t1,1
 	sw $t1,0($t0)
-	la $t1,0xFFFF0100
-	lb $t2,0($t1)       # Tecla lida
+	
+	# Le a tecla do buffer e atualiza o movimento que sera feito pelos pacs
+	la $t1,0xFF100000
+	lb $t2,4($t1)       # Tecla lida
 	jal tecla
 	
+	# Sleep de tempo definido em velociade
 	la $t0,velocidade
 	lw $a0,0($t0)
+	addi $v0,$zero,32
+	syscall
 	
-	li $t5,0xFFFF050C
-	lw $t0,0($t5)
-	add $t0,$t0,$a0
-	lw $t4,0($t5)
-ler:	
-	blt $t4,$zero,dir
-		lw $t4,0($t5)
-		sub $t4,$t0,$t4
-	j ler
+	lw $t0,players
+	la $t1,pac_position
+	addi $a1,$zero,76800
+	addi $v0,$zero,42
+	bgt $t0,1,rand_p3
+	syscall
+	addi $a0,$a0,0xff000000
+	sw $a0,4($t1)
+rand_p3: 
+	bgt $t0,2,rand_p4
+	syscall
+	addi $a0,$a0,0xff000000
+	sw $a0,8($t1)
+rand_p4: 
+	bgt $t0,3,dir
+	syscall
+	addi $a0,$a0,0xff000000
+	sw $a0,12($t1)		
+	
 	
 	# Prepara os valores para movimentar o pac amarelo
 	# $t2 = endereco da tecla que indica a direcao
 	# atualiza atpac para 0
 dir:
+	lw $t2,morto
+	bne $t2,-1,ta_morto1
+	
 	la $t2,atpac
 	addi $t1,$zero,0
 	sw $t1,0($t2)
@@ -1180,16 +1702,17 @@ dir:
 	# Verifica a direcao indicada por $t2 e realiza o movimento para o pacman amarelo
 movimenta:	
 	lw $t2,0($t2)
-
-	beq $t2,0x1D,cima	# cima - w
-	beq $t2,0x1B,baixo	# baixo - s
-	beq $t2,0x23,direita	# direita - d
-	beq $t2,0x1C,esquerda	# esquerda - a
+	jal ve_direcao_pac
 	
+ta_morto1:
 	lw $t1,players
 	blt $t1,2,loop
 	
 dir2:	
+	la $t2,morto
+	lw $t2,4($t2)
+	bne $t2,-1,ta_morto2
+	
 	la $t2,atpac
 	addi $t1,$zero,4
 	sw $t1,0($t2)
@@ -1199,16 +1722,17 @@ dir2:
 	la $t2,mov
 movimenta2:	
 	lw $t2,4($t2)
+	jal ve_direcao_pac
 	
-	beq $t2,0x43,cima	# cima - i
-	beq $t2,0x42,baixo	# baixo - k
-	beq $t2,0x4b,direita	# direita - l
-	beq $t2,0x3b,esquerda	# esquerda - j
-	
+ta_morto2:	
 	lw $t0,players
 	blt $t0,3,loop
 	
 dir3:	
+	la $t2,morto
+	lw $t2,8($t2)
+	bne $t2,-1,ta_morto3
+	
 	la $t2,atpac
 	addi $t1,$zero,8
 	sw $t1,0($t2)
@@ -1218,16 +1742,17 @@ dir3:
 	la $t2,mov
 movimenta3:	
 	lw $t2,8($t2)
+	jal ve_direcao_pac
 	
-	beq $t2,0x75,cima	# cima - 8
-	beq $t2,0x72,baixo	# baixo - 5
-	beq $t2,0x74,direita	# direita - 6
-	beq $t2,0x6B,esquerda	# esquerda - 4
-	
+ta_morto3:	
 	lw $t0,players
 	blt $t0,4,loop
 	
 dir4:	
+	la $t2,morto
+	lw $t2,12($t2)
+	bne $t2,-1,loop
+		
 	la $t2,atpac
 	addi $t1,$zero,12
 	sw $t1,0($t2)
@@ -1237,10 +1762,6 @@ dir4:
 	la $t2,mov
 movimenta4:	
 	lw $t2,12($t2)
-	
-	beq $t2,0x2B,cima	# cima - f
-	beq $t2,0x2A,baixo	# baixo - v
-	beq $t2,0x32,direita	# direita - b
-	beq $t2,0x21,esquerda	# esquerda - c
+	jal ve_direcao_pac
 	
 	j loop
