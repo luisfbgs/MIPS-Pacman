@@ -18,7 +18,7 @@
  menu_triangle_2: .word 180,103, 192,117, 180,132, 180,103
  food_coordinate1: .word 9,23 , 57,23 , 141,23 , 81,47 , 9,167 , 141,191 , 57,203
  food_coordinate2: .word 9,11 , 9,47 , 9,71 , 9,167 , 9,191 , 9,227 , 93,71
- food3: .word 57,119 , 129,47
+ food3: .word 57,119 , 129,47 , 141,191
  espelho: .word 1
  
  # Define quantos pac-mans vao ter no jogo (1~4)
@@ -631,7 +631,7 @@ mapa:
 	jal loop_food
 	
 	la $a0,food3
-	addi $a2,$0,0x5f
+	addi $a2,$0,0x0f
 	addi $s1,$zero,1
 	jal loop_food
 	
@@ -639,6 +639,9 @@ mapa:
 	addi $s1,$zero,1
 	jal loop_food
 	
+	addi $a0,$a0,8
+	addi $s1,$zero,1
+	jal loop_food
 	
 	j loop_jogo
 
