@@ -62,7 +62,6 @@ main_menu:
 
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
-	
 
 	jal preenchetela
 	#a0 = Endereco das coordenadas
@@ -95,6 +94,10 @@ main_menu:
 		addi $s0, $a0, 0
 		n_mudou:
 		la $t1,0xFF100000
+		addi $t5,$0,1000
+loop_pra_nao_bugar:
+			addi $t5,$t5,-1
+			bnez $t5,loop_pra_nao_bugar
 		lb $t2,4($t1)       # Tecla lida
 		sb $0, 4($t1)
 		beq $t2, 0xA, endpolling
@@ -627,7 +630,7 @@ mapa:
 	jal loop_food
 	
 	la $a0,food3
-	la $a2,0x90909090
+	addi $a2,$0,0x5f
 	addi $s1,$zero,1
 	jal loop_food
 	
@@ -796,7 +799,7 @@ sailimpaloop:
 	addi $t3,$t3,308
 	bne $t6,$zero,limpaloop
 	
-	addi $t4,$zero,0x02
+	addi $t4,$zero,0x08
 	addi $t3,$zero,0xFFFFFFc0
 	lb $t7,-314($a1)
 	beq $t7,$t3,prox1
@@ -1061,26 +1064,32 @@ mata_p1:
 	la $t3,morto
 	addi $t5,$zero,0
 	sw $t5,0($t3)
-	lw $t5,0($t3)
-	lw $t5,4($t3)
+	
+	addi $t3,$a1,965
 	jr $ra
 	
 mata_p2:
 	la $t3,morto
 	addi $t5,$zero,4
 	sw $t5,4($t3)
+	
+	addi $t3,$a1,965
 	jr $ra	
 
 mata_p3:
 	la $t3,morto
 	addi $t5,$zero,8
 	sw $t5,8($t3)
+	
+	addi $t3,$a1,965
 	jr $ra
 	
 mata_p4:
 	la $t3,morto
 	addi $t5,$zero,12
 	sw $t5,12($t3)
+	
+	addi $t3,$a1,965
 	jr $ra	
 #$a1 = endereco, $a0 = cor
 #Pinta fantasma ------------------------------------------------------------------------------------------------------------------------------------------------------------	
@@ -1111,13 +1120,25 @@ j_pinta_gloop:
 	bne $t6,$zero,pinta_gloop
 	
 	sw $ra,-4($sp)
-	addi $a2,$zero,0x02
+	addi $a2,$zero,0x08
 	jal colide
 	lw $ra,-4($sp)
 	
-	addi $t3,$a1,964
-	sb $zero,0($t3)
-	sb $zero,3($t3)
+	addi $t3,$a1,965
+	addi $t4,$zero,0xFF
+	sb $t4,-1($t3)
+	sb $t4,-321($t3)
+	sb $t4,-320($t3)
+	sb $t4,320($t3)
+	sb $t4,319($t3)
+	
+	sb $t4,2($t3)
+	sb $t4,-318($t3)
+	sb $t4,-317($t3)
+	sb $t4,323($t3)
+	sb $t4,322($t3)
+	sb $t4,0($t3)
+	sb $t4,3($t3)
 	
 	beq $s4,0x77,mata_p1
 	beq $s4,0x07,mata_p2
@@ -1193,6 +1214,7 @@ busca_fantasma:
 	beq $s3,2,baixog
 	beq $s3,3,direitag
 	beq $s3,4,esquerdag
+	
 nao_ta_morto:
 	
 	# if abs($t8) > abs($t9) movimento horizontal
@@ -1222,18 +1244,18 @@ direitag:
 	addi $a2,$a1,12
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,3532
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	
 	addi $a2,$a1,24
 	jal ve_se_bate
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,7064
 	jal ve_se_bate
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	
 	jal limpa	
 	
@@ -1252,6 +1274,10 @@ direitag:
 	addi $t3,$zero,4
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,0($t3)
+	sb $zero,3($t3)
+	
 	j saig
 	
 cimag:	
@@ -1269,18 +1295,18 @@ cimag:
 	addi $a2,$a1,-320
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,horizontal_mov
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,-309
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,horizontal_mov
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	
 	addi $a2,$a1,-640
 	jal ve_se_bate
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,-618
 	jal ve_se_bate
-	beq $v1,0x02,horizontal_mov	
+	beq $v1,0x08,horizontal_mov	
 				
 	jal limpa	
 	
@@ -1299,6 +1325,10 @@ cimag:
 	addi $t3,$zero,3
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,-321($t3)
+	sb $zero,-318($t3)
+	
 	j saig
 	
 baixog:	
@@ -1316,18 +1346,18 @@ baixog:
 	addi $a2,$a1,3840
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,horizontal_mov
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,3851
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,horizontal_mov
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	
 	addi $a2,$a1,7680
 	jal ve_se_bate
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	addi $a2,$a1,7702
 	jal ve_se_bate
-	beq $v1,0x02,horizontal_mov
+	beq $v1,0x08,horizontal_mov
 	
 	jal limpa	
 
@@ -1346,6 +1376,9 @@ baixog:
 	addi $t3,$zero,2
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $zero,320($t3)
+	sb $zero,323($t3)
 	j saig
 	
 esquerdag:
@@ -1363,20 +1396,20 @@ esquerdag:
 	addi $a2,$a1,-1
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,3519
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	
 	addi $a2,$a1,-2
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	addi $a2,$a1,7038
 	jal ve_se_bate
 	beq $v1,0xFFFFFFC0,vertical_mov
-	beq $v1,0x02,vertical_mov
+	beq $v1,0x08,vertical_mov
 	
 	jal limpa
 	# Verifica se o fantasma esta em cima de uma comida e a pinta se for necessario
@@ -1394,6 +1427,22 @@ esquerdag:
 	addi $t3,$zero,1
 	sw $t3,0($t2)
 	jal pintag
+	
+	sb $a3,0($t3)
+	sb $a3,3($t3)
+	sb $a3,-320($t3)
+	sb $a3,-317($t3)
+	sb $a3,320($t3)
+	sb $a3,323($t3)
+	sb $t4,-2($t3)
+	sb $t4,1($t3)
+	sb $t4,-322($t3)
+	sb $t4,-319($t3)
+	sb $t4,318($t3)
+	sb $t4,321($t3)
+	sb $zero,-2($t3)
+	sb $zero,1($t3)
+	
 	j saig
 		
 saig:
@@ -1576,7 +1625,7 @@ solta1:
 	la $t0,g_position
 	lw $a1,8($t0)
 	jal limpa
-	addi $a1,$0,4278242074
+	addi $a1,$0,4278242062
 	sw $a1,8($t0)
 	addi $a3, $zero, 0x8f
 	addi $t3,$zero,8
@@ -1586,7 +1635,7 @@ solta1:
 	la $t0,g_position
 	lw $a1,12($t0)
 	jal limpa
-	addi $a1,$0,4278242062
+	addi $a1,$0,4278242074
 	sw $a1,12($t0)
 	addi $a3, $zero, 0x99
 	addi $t3,$zero,12
