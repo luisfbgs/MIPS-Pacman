@@ -89,7 +89,7 @@ main_menu:
 	addi $a0, $a0, 8
 	jal funcao_reta
 	
-	la $t1,0xFF100000
+	la $t1,0xFFFF0500
 	la $t3, players
 	lw $a0, 0($t3)
 	addi $s0, $a0, 0
