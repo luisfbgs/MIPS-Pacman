@@ -20,6 +20,9 @@
  food_coordinate2: .word 9,11 , 9,47 , 9,71 , 9,167 , 9,191 , 9,227 , 93,71
  food3: .word 57,119 , 129,47 , 141,191
  espelho: .word 1
+ game_over_text_screen_1: .asciiz "Game Over"
+ NOTASNO: .word 12
+ NOTASINFO: .word 65, 500, 60, 500, 57, 500, 62, 300, 64, 300, 62, 300, 61, 300, 63, 300, 61, 300, 60, 200, 58, 200, 60, 600
  
  # Define quantos pac-mans vao ter no jogo (1~4)
  players: .word 4
@@ -31,8 +34,11 @@
  mov: .word 0,0,0,0
  atpac: .word 0
  pac_position: .word 0,0,0,0
+ pac_comedor: .word 0,0,0,0
+ pac_score: .word 0,0,0,0
  cor: .word 0
  morto: .word -1,-1,-1,-1
+ pontos: .word 0,0,0,0
  
  g_position: .word 0,0,0,0
  mov_antg: .word 0,0,0,0
@@ -123,7 +129,59 @@ loop_pra_nao_bugar:
 	addi $sp, $sp, 4
 	jr $ra
 	
+# Tela de game over
+
+game_over:
+
+	la $t0, morto
+	lw $t1, 0($t0)
+	lw $t2, players
+	beq $t1, -1, not_game_over
+	beq $t2,  1, real_game_over
+	lw $t1, 4($t0)
+	beq $t1, -1, not_game_over
+	beq $t2,  2, real_game_over
+	lw $t1, 8($t0)
+	beq $t1, -1, not_game_over
+	beq $t2,  3, real_game_over
+	lw $t1, 12($t0)
+	beq $t1, -1, not_game_over
 	
+	real_game_over:
+	
+	la $a0, game_over_text_screen_1
+	addi $a1, $0, 125
+	addi $a2, $0, 120
+	addi $v0, $0, 104
+	syscall
+	
+	la $t1,NOTASNO
+	lw $t2,0($t1)
+	la $t1,NOTASINFO
+	addi $t0,$0,0
+	addi $a2,$0,58	
+	addi $a3,$0,100	
+	LOOP23:
+		beq $t0,$t2, FIM23
+		lw $a0,0($t1)		
+		lw $a1,4($t1)		
+		addi $v0,$0,31		
+		syscall
+		add $a0,$0,$a1		
+		addi $v0,$0,32
+		syscall
+		addi $t1,$t1,8
+		addi $t0,$t0,1
+		j LOOP23
+	FIM23:
+	
+	
+	j END
+	
+	not_game_over:
+	jr $ra
+
+
 # imprime numero de players
 
 print_number_players: 
@@ -343,17 +401,17 @@ funcao_ponto:
 	sw $t1, 4($sp)
 	sw $t9, 8($sp)
 	#Uso do t0(variaveis) e t1(endere?o)
-	move $t0,$a1
+	addi $t0,$a1, 0
 	addi $at,$zero,320
 	mult $t0,$at # y *= 320
 	mflo $t0
 	lw $t1,baseadd #retorno recebe end base
 	add $t1,$t1,$t0
-	move $t9,$t1
-	move $t0,$a0 #reg reusado
+	addi $t9,$t1, 0
+	addi $t0,$a0, 0 #reg reusado
 	add $t1,$t1,$t0
 	sb $a2,0($t1)
-	move $t1,$t9
+	addi $t1,$t9, 0
 	la $t9,espelho
 	lw $t9,0($t9)
 	beqz $t9,saiponto
@@ -414,7 +472,7 @@ funcao_reta:
 		mflo $t4
 		j endif_fr_3
  	else_fr_3: 
- 		move $t4,$t0 #err = dx
+ 		addi $t4,$t0, 0 #err = dx
  	endif_fr_3:
 
 	sra $t4,$t4,1 # err = err/2 
@@ -886,6 +944,17 @@ mov_colide:
 	
 	lw $ra,-4($sp)
 	jr $ra
+	
+# Verifica se come comida-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ponto_verif:
+	lb $t8,1926($a1)
+	add $v0,$zero,$t8
+	andi $v0,$v0,1
+	lw $v1,0($s5)
+	add $v0,$v0,$v1
+	sw $v0,0($s5)
+	jr $ra
+		
 # Movimenta o Pacman  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # $s6 e $s7 = descolamento apartir do endereco do pacman que se deseja verificar colisao
 # $a3 = deslocamento que se deseja fazer no pacman
@@ -897,6 +966,8 @@ mexe_pac:
 	lw $t3,atpac
 	add $t0,$t0,$t3
 	lw $a1,0($t0)
+	la $s5,pontos
+	add $s5,$s5,$t3
 	
 	jal mov_colide
 			
@@ -908,6 +979,9 @@ mexe_pac:
 	la $a0,cor
 	lw $a0,0($a0)
 	add $a1,$a1,$a3
+	
+	jal ponto_verif
+	
 	sw $a1,0($t0)
 	jal pintapac
 	
@@ -1178,7 +1252,7 @@ busca_fantasma:
 	# $s0 = quantidade de direcoes tentadas
 	addi $s0,$zero,0
 
-	move $t3, $a0
+	addi $t3, $a0, 0
 	subi $t3, $t3, 0xff000000
 	addi $t6, $0, 320
 	div $t4, $t3, $t6
@@ -1574,6 +1648,15 @@ loop_jogo:
 	jal pintapac
 	
 loop:	
+	lw $a0,pontos
+	addi $a3,$0,0x00FF
+	addi $a1,$0,20
+	addi $a2,$0,100
+	addi $v0,$0,101
+	syscall 
+	
+	jal game_over
+	
 	# Verifica se o fantasma vermelho esta preso, subtrai em 1 o tempo caso esteja, valor em preso > 0
 	# e o movimenta caso contrario.
 	lw $t1,preso
@@ -1765,3 +1848,5 @@ movimenta4:
 	jal ve_direcao_pac
 	
 	j loop
+
+END:
