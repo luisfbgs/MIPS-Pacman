@@ -1771,25 +1771,25 @@ tecla:
 	beq $t2,0xF40B5E87,teclap1	# cima - w
 	beq $t2,0x9F600707,teclap2	# cima - i
 	beq $t2,0xFA050707,teclap3	# cima - 8
-	beq $t2,102,teclap4	# cima - f
+	beq $t2,0xB8472D2D,teclap4	# cima - f
 	
 	addi $t0,$zero,2
 	beq $t2,0xF30C5E87,teclap1	# baixo - s
 	beq $t2,0x9E610707,teclap2	# baixo - k
 	beq $t2,0xF20D0707,teclap3	# baixo - 5
-	beq $t2,118,teclap4	# baixo - v
+	beq $t2,0xB7482D2D,teclap4	# baixo - v
 	
 	addi $t0,$zero,3
 	beq $t2,0xE31C5E87,teclap1	# direita - d
 	beq $t2,0x9D620707,teclap2	# direita - l
 	beq $t2,0xF50A0707,teclap3	# direita - 6
-	beq $t2,98,teclap4	# direita - b
+	beq $t2,0xA55A2D2D,teclap4	# direita - b
 	
 	addi $t0,$zero,4
 	beq $t2,0xE41B5E87,teclap1	# esquerda - a
 	beq $t2,0x9A650707,teclap2	# esquerda - j
 	beq $t2,0xF7080707,teclap3	# esquerda - 4
-	beq $t2,99,teclap4	# esquerda - c
+	beq $t2,0xA6592D2D,teclap4	# esquerda - c
 	
 sai_tecla: 
 	jr $ra
