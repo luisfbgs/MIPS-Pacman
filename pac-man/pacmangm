@@ -904,21 +904,25 @@ sailimpaloop:
 	lb $t7,-314($a1)
 	beq $t7,$t3,prox1
 	beq $t7,$t4,prox1
+	beq $t7,0x01,prox1
 	sb $t7,6($a1)
 	sb $t7,5($a1)
 prox1:	lb $t7,3846($a1)
 	beq $t7,$t3,prox2
 	beq $t7,$t4,prox2
+	beq $t7,0x01,prox2
 	sb $t7,3526($a1)
 	sb $t7,3525($a1)
 prox2:	lb $t7,1599($a1)	
 	beq $t7,$t3,prox3
 	beq $t7,$t4,prox3
+	beq $t7,0x01,prox3
 	sb $t7,1600($a1)
 	sb $t7,1920($a1)
 prox3:	lb $t7,1932($a1)	
 	beq $t7,$t3,prox4
 	beq $t7,$t4,prox4
+	beq $t7,0x01,prox4
 	sb $t7,1611($a1)
 	sb $t7,1931($a1)
 prox4:
@@ -1095,7 +1099,7 @@ ponto_verif:
 	sw $v0,-20($sp)
 	addi $sp,$sp,-20
 	
-	addi $a0,$0,70		
+	addi $a0,$0,73		
 	addi $a1,$0,10
 	addi $a2,$0,0
 	addi $a3,$0,127		
@@ -1411,6 +1415,11 @@ j_pinta_gloop:
 	sb $t4,322($t3)
 	sb $t4,0($t3)
 	sb $t4,3($t3)
+	
+	sb $0,2238($t3)
+	sb $0,2239($t3)
+	sb $0,2242($t3)
+	sb $0,2243($t3)	
 	
 	beq $s4,0x77,mata_p1
 	beq $s4,0x07,mata_p2
@@ -1995,20 +2004,22 @@ para_de_ler:
 	
 	lw $t0,players
 	la $t1,pac_position
-	addi $a1,$zero,76800
-	addi $v0,$zero,42
+	li $a1,0xFFFF0510
+	lw $a0,0($a1)
+	andi $a0,$a0,0xFFFF
 	bgt $t0,1,rand_p3
-	syscall
 	addi $a0,$a0,0xff000000
 	sw $a0,4($t1)
 rand_p3: 
 	bgt $t0,2,rand_p4
-	syscall
+	lw $a0,0($a1)
+	andi $a0,$a0,0xFFFF
 	addi $a0,$a0,0xff000000
 	sw $a0,8($t1)
 rand_p4: 
 	bgt $t0,3,dir
-	syscall
+	lw $a0,0($a1)
+	andi $a0,$a0,0xFFFF
 	addi $a0,$a0,0xff000000
 	sw $a0,12($t1)		
 	
