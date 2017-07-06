@@ -1,5 +1,5 @@
 #################################################################
-#	Jogo Pac-man                                           	#
+#	Jogo Pac-man / versao para o MARS                       #
 #	Organizacao e arquitetura de computadores  1/2017    	#
 #	Gabriel Nunes - 16/0006597 - nunesgrf@gmail.com 	#
 #	Gabriel Lobão - 16/0046424 - lobao5670@gmail.com	#
