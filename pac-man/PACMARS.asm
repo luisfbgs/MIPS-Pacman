@@ -1,3 +1,13 @@
+#################################################################
+#	Jogo Pac-man                                           	#
+#	Organizacao e arquitetura de computadores  1/2017    	#
+#	Gabriel Nunes - 16/0006597 - nunesgrf@gmail.com 	#
+#	Gabriel Lobão - 16/0046424 - lobao5670@gmail.com	#
+#	Mikael Mello - 16/0015537 - mikaelmello@hotmail.com	#
+#	Luis Braga - 16/0071569 - arueluis@gmail.com		#
+#	Gabriel Levi - 16/0006490 - gabrielevigomes@gmail.com	#
+#	Léo Moraes - 16/0011795 - leo.ms097@gmail.com		#
+#################################################################
 .data
  coordinates1: .word 159,0 ,  0,0 , 0,82 , 48,82 , 48,158 , 0,158 , 0,239 , 159,239
  coordinates2: .word 159,41, 148,41 , 148,5 , 3,5 , 3,78 , 51,78 , 51,161  
@@ -46,6 +56,12 @@
  comida: .word 0,0,0,0
 .text
 inicio:
+# Menu : 'a' direita, 's' esquerda, 'enter' confirmar numero de jogadores
+# Jogo : Pacman amarelo: 'w' cima, 's' baixo, 'a' direita, 'd' esquerda
+# Pacman vermelho: 'i' cima, 'j' esquerda, 'k' baixo, 'l' direita
+# Pacman verde: '8' cima, '5' baixo, '4' esquerda, '6' direita
+# Pacman marrom: 'f' cima, 'v' baixo, 'c' equerda, 'b' direita
+
 
 li $sp,0x10011ffc
 
